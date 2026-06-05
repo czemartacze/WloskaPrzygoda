@@ -175,8 +175,7 @@
           const [currentTab, setCurrentTab] = useState('calendar'); 
           const [selectedDay, setSelectedDay] = useState(null);
           
-          const [timeTravel, setTimeTravel] = useState(false);
-          const today = timeTravel ? new Date('2026-07-28T00:00:00') : new Date();
+          const today = new Date();
 
           const [showProfileModal, setShowProfileModal] = useState(false);
           const [newBadgeAlert, setNewBadgeAlert] = useState(null);
@@ -317,12 +316,6 @@
                   </div>
                   
                   <div className="flex items-center gap-2 sm:gap-4">
-                     <button 
-                        onClick={() => setTimeTravel(!timeTravel)}
-                        className={`text-[10px] sm:text-xs px-2 py-1 rounded border ${timeTravel ? 'bg-yellow-400 text-slate-900 border-yellow-400 font-bold' : 'bg-white/10 border-white/30 text-white/70 hover:bg-white/20'}`}
-                     >
-                        {timeTravel ? 'Test: Odblokowane' : 'Test: Zegar'}
-                     </button>
                      <button onClick={() => setShowProfileModal(true)} className="flex items-center justify-center w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full border border-white/30 transition-all active:scale-95 shadow-inner relative group">
                         <User size={20} className="text-white" />
                         {(profile?.badges?.length || 0) > 0 && (
