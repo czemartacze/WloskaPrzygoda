@@ -39,7 +39,6 @@
         import { getAuth, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
         import { getFirestore, doc, setDoc, onSnapshot, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
-        // KROK 1: Twoja konfiguracja Firebase (Nic tu nie zmieniaj)
         const firebaseConfig = {
           apiKey: "AIzaSyAbeJzL9aPpncfrlYgoHMxEzkkUa0K72WE",
           authDomain: "wloska-przygoda.firebaseapp.com",
@@ -52,13 +51,12 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // KROK 2: TUTAJ ZMIEŃ IMIONA I HASŁA SWOJEGO ZESPOŁU
         const USERS_CREDENTIALS = {
-          "Marta": "wlochy135",
-          "Jacek": "wlochy246",
-          "Paweł": "wlochy357",
-          "Oskar": "wlochy468",
-          "Szymon": "wlochy579"
+          "Marta": "wlochy1",
+          "Jacek": "wlochy2",
+          "Paweł": "wlochy3",
+          "Oskar": "wlochy4",
+          "Szymon": "wlochy5"
         };
 
         const BADGES = {
@@ -125,7 +123,7 @@
           32: { type: 'daily', title: "Słodycze Północy", location: "Desery", trivia: "Werona to nie tylko Romeo i Julia, ale też ojczyzna 'Pandoro' - słodkiej, maślanej babki w kształcie ośmioramiennej gwiazdy, jedzonej tradycyjnie w okresie świąt.", challenge: "Zjedz dziś coś słodkiego i popraw sobie humor!", words: [{ it: "Avete dei dolci tipici?", pl: "Czy macie jakieś lokalne, typowe słodycze?" }, { it: "Adoro il cioccolato fondente.", pl: "Uwielbiam gorzką czekoladę." }, { it: "I biscotti", pl: "Ciasteczka" }], quiz: { question: "Gorzka czekolada to po włosku:", options: ["Dolci", "Cioccolato fondente", "Biscotti"], answer: 1 } },
           
           33: { type: 'minigame_match', title: "Rozgrzewka Smakosza", location: "Podsumowanie", trivia: "Złącz włoskie i polskie produkty spożywcze w pyszne pary.", pairs: [{it: "Il formaggio", pl: "Ser"}, {it: "I salumi", pl: "Wędliny"}, {it: "I dolci", pl: "Słodycze"}, {it: "Fresco", pl: "Świeży"}, {it: "Un etto", pl: "100 gramów"}] },
-          34: { type: 'simulation', title: "Symulacja: Dział Fresco", location: "Praktyka", trivia: "Zapach serów i wędlin wisi w powietrzu. Sprzedawca zza lady pyta, w czym Ci pomóc.", scenario: { start: { bot: "Prego! Dica. (Słucham! Proszę mówić.)", options: [ { text: "Vorrei due etti di prosciutto, per favore. (Poproszę 200g szynki.)", next: 'szynka' }, { text: "Un caffè macchiato.", next: 'kawa' } ] }, kawa: { bot: "Deve andare al bar per il caffè! (Po kawę musi Pan/Pani iść do baru!)", end: true }, szynka: { bot: "Ecco a Lei. Altro? (Proszę bardzo. Coś jeszcze?)", options: [ { text: "Sì, vorrei assaggiare questo formaggio. (Tak, chciałbym/chciałabym spróbować tego sera.)", next: 'koniec' } ] }, koniec: { bot: "Certo, è delizioso! (Oczywiście, jest pyszny!) 🎉", end: true } } },
+          34: { type: 'simulation', title: "Symulacja: Dział Fresco", location: "Praktyka", trivia: "Zapach serów i wędlin wisi w powietrzu. Sprzedawca zza lady pyta, w czym Ci pomóc.", scenario: { start: { bot: "Prego! Dica. (Słucham! Proszę mówić.)", options: [ { text: "Vorrei due etti di prosciutto, per favore. (Poproszę 200g szynki.)", next: 'szynka' }, { text: "Un caffè macchiato.", next: 'kawa' } ] }, kawa: { bot: "Deve andare al bar per il caffè! (Po kawę musi Pan/Pani iść do baru!)", end: true }, szynka: { bot: "Ecco a Lei. Altro? (Proszę bardzo. Coś jeszcze?)", options: [ { text: "Sì, vorrei assaggiare questo formaggio. (Tak, chciałbym/chciałabym spróbować tego sera.)", next: 'koniec' } ] }, koniec: { bot: "Certo, è delizioso! (Oczywiście, è pyszny!) 🎉", end: true } } },
           35: { type: 'weekend', title: "Dolina Motoryzacji", location: "Ciekawostka", trivia: "Północne Włochy (Emilia-Romania niedaleko Lombardii) to dom dla tzw. 'Motor Valley'. Powstają tam kultowe samochody sportowe: Ferrari, Lamborghini czy Pagani." },
 
           36: { type: 'daily', title: "Jezioro Garda", location: "Natura", trivia: "Garda to największe i najczystsze jezioro we Włoszech. Jego północna część otoczona jest spektakularnymi górami, a południowa słynie z pięknych gajów oliwnych i winnic.", challenge: "Wpisz w mapy Google zamek 'Castello di Sirmione' i zobacz jak jest położony na wodzie.", words: [{ it: "Che bella vista!", pl: "Ale piękny widok!" }, { it: "Il lago è fantastico.", pl: "Jezioro jest fantastyczne." }, { it: "Che bel posto!", pl: "Jakie piękne miejsce!" }], quiz: { question: "Widzisz zachwycający widok nad jeziorem. Powiesz:", options: ["Che bella vista!", "È chiuso", "Scusa"], answer: 0 } },
@@ -210,7 +208,9 @@
               const usersData = [];
               snapshot.forEach(doc => usersData.push({ id: doc.id, ...doc.data() }));
               setAllUsers(usersData);
-              setProfile(usersData.find(u => u.id === user.uid) || null);
+              if (profile) {
+                 setProfile(usersData.find(u => u.id === profile.id) || null);
+              }
             }, (error) => {
                setAuthError("Brak dostępu do pobrania danych (Code: " + error.code + "). Upewnij się, że reguły bazy Firestore w trybie testowym nadal działają.");
             });
@@ -218,12 +218,12 @@
             const msgsRef = collection(db, 'messages');
             const unsubMsgs = onSnapshot(msgsRef, (snap) => {
                let myMsgs = 0;
-               snap.forEach(doc => { if (doc.data().authorId === user.uid) myMsgs++; });
+               snap.forEach(doc => { if (profile && doc.data().authorId === profile.id) myMsgs++; });
                setMessagesCount(myMsgs);
             });
 
             return () => { unsubscribeUsers(); unsubMsgs(); }
-          }, [user]);
+          }, [user, profile?.id]);
 
           useEffect(() => {
             if (!profile) return;
@@ -254,24 +254,29 @@
                checkAndAward('maestro', unlockedWordsCount >= 20);
 
                if (newlyEarned.length > 0) {
-                 const userRef = doc(db, 'users', user.uid);
+                 const userRef = doc(db, 'users', profile.id);
                  setDoc(userRef, { badges: [...earned, ...newlyEarned] }, { merge: true });
                  setNewBadgeAlert(BADGES[newlyEarned[0]]);
                }
             };
             evaluateBadges();
-          }, [profile, messagesCount, user]);
+          }, [profile, messagesCount]); // Usunięto user z listy zależności dla bezpieczeństwa
 
           const handleLoginSubmit = async (name) => {
             if (!user) return;
-            const userRef = doc(db, 'users', user.uid);
-            await setDoc(userRef, { name: name, completedDays: [], completedChallenges: [], badges: [], createdAt: serverTimestamp() }, { merge: true });
+            const userKey = name.toLowerCase(); 
+            const userRef = doc(db, 'users', userKey);
+            
+            await setDoc(userRef, { name: name, createdAt: serverTimestamp() }, { merge: true });
+            
+            const profileData = allUsers.find(u => u.id === userKey) || { id: userKey, name: name };
+            setProfile(profileData);
           };
 
           const markDayCompleted = async (dayNum) => {
             if (!profile) return;
             if (profile.completedDays?.includes(dayNum)) { setSelectedDay(null); return; }
-            const userRef = doc(db, 'users', user.uid);
+            const userRef = doc(db, 'users', profile.id);
             await setDoc(userRef, { completedDays: [...(profile.completedDays || []), dayNum] }, { merge: true });
             setSelectedDay(null);
           };
@@ -280,7 +285,7 @@
             if (!profile) return;
             const isDone = profile.completedChallenges?.includes(dayNum);
             const newChalls = isDone ? profile.completedChallenges.filter(d => d !== dayNum) : [...(profile.completedChallenges || []), dayNum];
-            const userRef = doc(db, 'users', user.uid);
+            const userRef = doc(db, 'users', profile.id);
             await setDoc(userRef, { completedChallenges: newChalls }, { merge: true });
           };
 
@@ -343,7 +348,7 @@
                     {currentTab === 'dictionary' && <DictionaryView profile={profile} />}
                     {currentTab === 'trivia' && <TriviaView profile={profile} />}
                     {currentTab === 'challenges' && <ChallengesView profile={profile} onToggle={toggleChallenge} />}
-                    {currentTab === 'team' && <TeamView allUsers={allUsers} user={user} />}
+                    {currentTab === 'team' && <TeamView allUsers={allUsers} user={user} profile={profile} />}
                     {currentTab === 'chat' && <ChatView profile={profile} allUsers={allUsers} user={user} today={today} />}
                   </>
                 )}
@@ -502,7 +507,7 @@
                 </div>
                 <div>
                   <h2 className="text-xl sm:text-2xl font-serif font-bold mb-1 text-[#006838]">Plan Podróży</h2>
-                  <p className="text-sm text-slate-600">Przygotujmy się wspólnie na wyjazd do Włoch, rozwiązując codzienne zadania, poznając przydatne słówka i ciekawostki!</p>
+                  <p className="text-sm text-slate-600">Przygotujmy się na wyjazd do Włoch, wspólnie rozwiązując codzienne zadania!</p>
                 </div>
               </div>
 
@@ -554,7 +559,6 @@
                 </div>
               </div>
 
-              {/* Pasek postępu finału */}
               <div className="mt-8 mb-8">
                 {isAllCompleted ? (
                    <button onClick={onEpicWin} className="w-full bg-gradient-to-r from-yellow-400 to-amber-500 text-slate-900 p-6 rounded-3xl shadow-xl border-4 border-white text-center animate-pulse hover:scale-[1.02] active:scale-95 transition-all">
@@ -1058,13 +1062,13 @@
           );
         }
 
-        function TeamView({ allUsers, user }) {
+        function TeamView({ allUsers, user, profile }) {
           return (
             <div className="animate-in fade-in pb-4 max-w-2xl mx-auto">
               <h2 className="text-2xl font-serif font-bold mb-6 text-[#006838]">Progres Zespołu</h2>
               <div className="space-y-4">
                 {allUsers.map(u => {
-                   const isMe = u.id === user.uid;
+                   const isMe = u.id === profile?.id;
                    const completed = u.completedDays?.length || 0;
                    const uBadges = u.badges || [];
                    return (
@@ -1126,13 +1130,14 @@
             e.preventDefault();
             if (!newMessage.trim() || !user || !profile) return;
             const msgRef = collection(db, 'messages');
-            await addDoc(msgRef, { text: newMessage.trim(), authorId: user.uid, authorName: profile.name, timestamp: serverTimestamp() });
+            await addDoc(msgRef, { text: newMessage.trim(), authorId: profile.id, authorName: profile.name, timestamp: serverTimestamp() });
             setNewMessage('');
           };
 
           return (
             <div className="animate-in fade-in flex flex-col h-[calc(100vh-160px)] sm:h-auto max-w-2xl mx-auto">
               <h2 className="text-2xl font-serif font-bold mb-4 text-[#006838]">Czat Zespołu</h2>
+              
               <div className="flex-1 bg-white border border-slate-200 rounded-2xl flex flex-col overflow-hidden min-h-[350px] shadow-sm">
                 <div className="bg-amber-50 p-3 sm:p-4 border-b border-amber-200 flex gap-3 items-start shrink-0">
                   <div className="bg-amber-500 text-white p-2 rounded-full shrink-0 shadow-sm"><MessageCircle size={16} /></div>
@@ -1145,9 +1150,9 @@
                 <div ref={chatRef} className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#FDF9F1]">
                   {messages.length === 0 ? <div className="text-center text-slate-400 mt-10 text-sm bg-white p-4 rounded-xl border border-slate-100 inline-block mx-auto">Napisz jako pierwszy!</div> : 
                     messages.map(msg => (
-                      <div key={msg.id} className={`flex flex-col ${msg.authorId === user.uid ? 'items-end' : 'items-start'}`}>
-                        <span className="text-[10px] text-slate-400 font-bold mb-1 px-1">{msg.authorId === user.uid ? 'Ty' : msg.authorName}</span>
-                        <div className={`max-w-[85%] p-3 rounded-2xl text-sm shadow-sm ${msg.authorId === user.uid ? 'bg-[#008C45] text-white rounded-tr-none' : 'bg-white border border-slate-200 text-slate-800 rounded-tl-none'}`}>
+                      <div key={msg.id} className={`flex flex-col ${msg.authorId === profile?.id ? 'items-end' : 'items-start'}`}>
+                        <span className="text-[10px] text-slate-400 font-bold mb-1 px-1">{msg.authorId === profile?.id ? 'Ty' : msg.authorName}</span>
+                        <div className={`max-w-[85%] p-3 rounded-2xl text-sm shadow-sm ${msg.authorId === profile?.id ? 'bg-[#008C45] text-white rounded-tr-none' : 'bg-white border border-slate-200 text-slate-800 rounded-tl-none'}`}>
                           {msg.text}
                         </div>
                       </div>
