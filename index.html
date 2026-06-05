@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>La Dolce Vita 🇮🇹</title>
+    
+    <!-- Pobranie Tailwind CSS do stylów -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Mapowanie nowoczesnych modułów (React, Firebase, Lucide Icons) -->
+    <script type="importmap">
+      {
+        "imports": {
+          "react": "https://esm.sh/react@18.2.0",
+          "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+          "lucide-react": "https://esm.sh/lucide-react@0.292.0",
+          "firebase/app": "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js",
+          "firebase/auth": "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js",
+          "firebase/firestore": "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js"
+        }
+      }
+    </script>
+    
+    <!-- Pobranie Babel, aby przeglądarka zrozumiała kod Reacta -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom); padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
+    </style>
+</head>
+<body class="bg-[#FDF9F1] text-slate-800">
+    <div id="root"></div>
+
+    <script type="text/babel" data-type="module">
+        import React, { useState, useEffect, useRef } from 'react';
+        import { createRoot } from 'react-dom/client';
+        import { Play, Volume2, ArrowLeft, CheckCircle, MapPin, Coffee, Music, Award, Star, Lock, CalendarDays, BookOpen, BrainCircuit, MessageSquare, CheckSquare, Target, Search, Plane, Medal, User, Users, Video, MessageCircle } from 'lucide-react';
+        import { initializeApp } from 'firebase/app';
+        import { getAuth, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
+        import { getFirestore, doc, setDoc, onSnapshot, collection, addDoc, serverTimestamp } from 'firebase/firestore';
+
+        // Konfiguracja Twojej bazy Firebase
+        const firebaseConfig = {
+          apiKey: "AIzaSyAbeJzL9aPpncfrlYgoHMxEzkkUa0K72WE",
+          authDomain: "wloska-przygoda.firebaseapp.com",
+          projectId: "wloska-przygoda",
+          storageBucket: "wloska-przygoda.firebasestorage.app",
+          messagingSenderId: "593365557590",
+          appId: "1:593365557590:web:987ff6c22d0bf10acf36f7"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = 'wloska-przygoda-fmcg';
+
+        // ZMIEŃ IMIONA I HASŁA PONIŻEJ!
+        const USERS_CREDENTIALS = {
+          "Marta": "wlochy1",
+          "Jacek": "wlochy2",
+          "Paweł": "wlochy3",
+          "Oskar": "wlochy4",
+          "Szymon": "wlochy5"
+        };
+
+        const BADGES = {
+          primo: { id: 'primo', name: "Primo Passo", icon: '🚀', desc: "Zaloguj się i rozpocznij przygodę (Zalicz 1 dzień)." },
+          chiacchierone: { id: 'chiacchierone', name: "Chiacchierone", icon: '🗣️', desc: "Gaduła: Wyślij 5 wiadomości na czacie zespołu." },
+          studente: { id: 'studente', name: "Studente Diligente", icon: '📚', desc: "Pilny Uczeń: Zalicz pierwsze 10 dni wyzwania." },
+          sfida: { id: 'sfida', name: "La Sfida Accettata", icon: '🎯', desc: "Wyzwanie Przyjęte: Odhacz 10 wyzwań dnia." },
+          maestro: { id: 'maestro', name: "Maestro d'Italiano", icon: '🎓', desc: "Mistrz Języka: Odblokuj 20 słówek/zwrotów." },
+          mezzo: { id: 'mezzo', name: "Mezzo Cammino", icon: '🧭', desc: "Półmetek: Zalicz 25 dni wyzwania." },
+          esploratore: { id: 'esploratore', name: "L'Esploratore", icon: '🗺️', desc: "Odkrywca: Zbliżasz się do celu! Zalicz 40 dni." },
+          pronto: { id: 'pronto', name: "Pronto per l'Italia!", icon: '✈️', desc: "Złoto: Ukończ wszystkie 49 dni przygotowań!" }
+        };
+
+        const WEEK_THEMES = {
+          1: "Tydzień 1: Podstawy przetrwania",
+          2: "Tydzień 2: Jedzenie i Kawa",
+          3: "Tydzień 3: Miasto i Transport",
+          4: "Tydzień 4: Włoski Handel i Sklepy",
+          5: "Tydzień 5: Asortyment i Smaki",
+          6: "Tydzień 6: Relaks nad Gardą",
+          7: "Tydzień 7: Wielkie Odliczanie"
+        };
+
+        const appData = {
+          1: { type: 'daily', title: "Giorno 1: Benvenuti!", location: "Start", trivia: "Włosi przywiązują wielką wagę do powitań. Uśmiechnięte 'Buongiorno' to wyraz szacunku.", challenge: "Wyzwanie muzyczne: wpisz w YouTube 'Felicita - Al Bano'. Posłuchaj i spróbuj zanucić refren przy dzisiejszej kawie!", words: [{ it: "Buongiorno", pl: "Dzień dobry" }, { it: "Piacere di conoscerti.", pl: "Miło mi cię poznać." }, { it: "Tutto bene!", pl: "Wszystko w porządku!" }, { it: "Ciao", pl: "Cześć" }, { it: "Prego", pl: "Proszę (bardzo)" }], quiz: { question: "Ktoś mówi do Ciebie 'Grazie'. Co odpowiadasz?", options: ["Ciao", "Prego", "Buongiorno"], answer: 1 } },
+          2: { type: 'daily', title: "Giorno 2: Magiczne słowa", location: "Kultura", trivia: "Włosi używają około 250 różnych gestów dłoni do komunikacji! Czasem gest wyraża więcej niż tysiąc słów.", challenge: "Powiedz dziś 'Grazie' do kogoś z zespołu, gdy Ci w czymś pomoże.", words: [{ it: "Per favore", pl: "Proszę (prosząc o coś)" }, { it: "Scusa, hai un minuto?", pl: "Przepraszam, masz minutę?" }, { it: "Può aiutarmi, per favore?", pl: "Czy może mi Pan/Pani pomóc?" }, { it: "No, grazie", pl: "Nie, dziękuję" }, { it: "Sì, certo", pl: "Tak, oczywiście" }], quiz: { question: "Chcesz zapytać kogoś na ulicy o drogę. Jak zaczniesz?", options: ["No", "Scusa", "Grazie"], answer: 1 } },
+          3: { type: 'daily', title: "Giorno 3: Bariera językowa", location: "Kultura", trivia: "Na północy Włoch dogadasz się po angielsku, ale każda włoska wstawka zawsze spotka się z serdecznym uśmiechem.", challenge: "Napisz dziś na Czacie zespołu: co Cię najbardziej stresuje w zagranicznych wyjazdach?", words: [{ it: "Non capisco", pl: "Nie rozumiem" }, { it: "Parla inglese?", pl: "Mówi pan/pani po angielsku?" }, { it: "Può ripetere, per favore?", pl: "Czy może Pan/Pani powtórzyć?" }, { it: "Come sta?", pl: "Jak się Pan/Pani miewa?" }, { it: "Sto bene, grazie.", pl: "Mam się dobrze, dziękuję." }], quiz: { question: "Jak powiesz, że nie rozumiesz?", options: ["Non capisco", "Come sta", "Bene"], answer: 0 } },
+          4: { type: 'daily', title: "Giorno 4: Pożegnania", location: "Kultura", trivia: "Baci (buziaki) w policzek na pożegnanie to standard, najpierw w LEWY, a potem w PRAWY policzek.", challenge: "Wyjdź dziś z biura lub pożegnaj się na spotkaniu online słowem 'Arrivederci!'.", words: [{ it: "Arrivederci", pl: "Do widzenia" }, { it: "A presto", pl: "Do zobaczenia wkrótce" }, { it: "Ci vediamo domani!", pl: "Widzimy się jutro!" }, { it: "Buonasera", pl: "Dobry wieczór" }, { it: "Buona giornata", pl: "Miłego dnia" }], quiz: { question: "Wychodzisz o godzinie 14:00. Co najlepiej powiedzieć?", options: ["Buonasera", "Buona giornata (Miłego dnia)", "A presto"], answer: 1 } },
+          5: { type: 'minigame_match', title: "Rozgrzewka: Łączenie w pary", location: "Podsumowanie", trivia: "Zamiast testu, zagrajmy w grę! Spróbuj połączyć włoskie słówka z poprzednich dni z ich polskimi odpowiednikami.", pairs: [{it: "Buongiorno", pl: "Dzień dobry"}, {it: "Grazie", pl: "Dziękuję"}, {it: "Arrivederci", pl: "Do widzenia"}, {it: "Per favore", pl: "Proszę (prosząc)"}, {it: "Non capisco", pl: "Nie rozumiem"}] },
+          6: { type: 'simulation', title: "Symulacja: Na Ulicy", location: "Weekend z praktyką", trivia: "Weekendowy relaks! Spróbujmy użyć słówek z tego tygodnia w prostej scence na ulicy w Bergamo.", scenario: { start: { bot: "Buongiorno! (Dzień dobry!)", options: [ { text: "Buongiorno! Scusa, dov'è l'hotel? (Przepraszam, gdzie jest hotel?)", next: 'wskazowka' }, { text: "Buongiorno! Parla inglese? (Mówi Pan po angielsku?)", next: 'angielski' } ] }, angielski: { bot: "Oh, English? Can I help you?", options: [ { text: "Sì, grazie. (Tak, dziękuję.)", next: 'koniec' } ] }, wskazowka: { bot: "Ah, l'hotel è a destra! (Hotel jest po prawej!)", options: [ { text: "Grazie mille! Arrivederci! (Bardzo dziękuję! Do widzenia!)", next: 'koniec' } ] }, koniec: { bot: "Prego! Buona giornata! 🎉", end: true } } },
+          7: { type: 'weekend', title: "Północ vs Południe", location: "Geografia", trivia: "Północ to przemysł i pośpiech (jak na włoskie standardy!), Południe to rolnictwo i wolniejsze tempo." },
+
+          8: { type: 'daily', title: "Giorno 8: Kawa w Bergamo", location: "Bergamo", trivia: "'Caffè' to małe espresso. Cappuccino? Włosi piją je tylko rano!", challenge: "Dzisiejszą kawę lub herbatę wypij powoli, nie patrząc w ekran.", words: [{ it: "Vorrei un caffè macchiato.", pl: "Chciałbym espresso z mlekiem." }, { it: "Prendo un caffè da asporto.", pl: "Wezmę kawę na wynos." }, { it: "Un espresso, per favore.", pl: "Poproszę espresso." }, { it: "Senza zucchero", pl: "Bez cukru" }], quiz: { question: "Zamawiasz kawę o 16:00. Czego NIE powinieneś zamawiać?", options: ["Un caffè", "Un cappuccino", "Un espresso"], answer: 1 } },
+          9: { type: 'daily', title: "Giorno 9: Włoska Restauracja", location: "Gastronomia", trivia: "Restauracje doliczają tzw. 'coperto' (nakrycie stołu ok. 2-3 euro), co zastępuje napiwek.", challenge: "Wyzwanie: Znajdź w sieci przepis na prawdziwą Carbonarę (bez śmietany!).", words: [{ it: "Possiamo avere il menù?", pl: "Czy możemy prosić o menu?" }, { it: "Il conto, per favore.", pl: "Poproszę rachunek." }, { it: "È tutto delizioso!", pl: "Wszystko jest pyszne!" }], quiz: { question: "Jak poprosisz o rachunek?", options: ["Il menù", "Il conto, per favore", "È delizioso"], answer: 1 } },
+          10: { type: 'daily', title: "Giorno 10: Pizza i Lody", location: "Gastronomia", trivia: "Margherita symbolizuje flagę Włoch: czerwone pomidory, biała mozzarella, zielona bazylia.", challenge: "Wrzuć na czat zespołu odpowiedź: jaka jest Twoja ulubiona pizza?", words: [{ it: "Vorrei una pizza Margherita.", pl: "Poproszę pizzę Margheritę." }, { it: "Per me una birra piccola.", pl: "Dla mnie małe piwo." }, { it: "Il bicchiere / Il cono", pl: "Kubeczek / Rożek" }, { it: "Vorrei un gelato al pistacchio.", pl: "Poproszę lody pistacjowe." }, { it: "Due palline, per favore.", pl: "Dwie gałki, poproszę." }], quiz: { question: "Co znajduje się na oryginalnej Marghericie?", options: ["Pomidory, mozzarella, bazylia", "Szynka i pieczarki", "Ananas"], answer: 0 } },
+          11: { type: 'video', title: "Giorno 11: Tajemnica Gelato", location: "Kultura", trivia: "Prawdziwe rzemieślnicze 'Gelato' to nie to samo co zwykłe lody! Włosi są z nich niesamowicie dumni.", videoId: "7C-Qn3vIeZk", question: "Dlaczego włoskie Gelato ma tak intensywny smak?", options: ["Jest zamrażane w niższej temperaturze", "Zawiera mniej powietrza i tłuszczu niż lody", "Dodaje się do nich więcej barwników"], answer: 1 },
+          12: { type: 'minigame_scramble', title: "Rozgrzewka: Konstruktor Zdań", location: "Podsumowanie", trivia: "Połącz słowa w odpowiedniej kolejności, aby zbudować poprawne, pożyteczne zdanie!", sentence: "Vorrei un caffè per favore", translation: "Poproszę kawę", words: ["caffè", "Vorrei", "per", "favore", "un"] },
+          13: { type: 'simulation', title: "Symulacja: Włoska Kawiarnia", location: "Praktyka", trivia: "Czas na zamówienie! Włosi cenią szybką wymianę zdań przy barze.", scenario: { start: { bot: "Buongiorno! Cosa prende? (Dzień dobry! Co podać?)", options: [ { text: "Vorrei una pizza Margherita.", next: 'pizza' }, { text: "Un cappuccino, per favore.", next: 'cappuccino' } ] }, pizza: { bot: "Ottimo. Da bere? (Świetnie. Coś do picia?)", options: [ { text: "Per me una birra piccola. (Dla mnie małe piwo.)", next: 'koniec' } ] }, cappuccino: { bot: "Sono le 16:00! Niente cappuccino al pomeriggio! (Jest 16:00! Żadnego cappuccino po południu!)", end: true }, koniec: { bot: "Subito! Ecco il conto. (Już się robi! Oto rachunek.) 🎉", end: true } } },
+          14: { type: 'weekend', title: "Narodowy deser", location: "Kulinaria", trivia: "Tiramisu to po włosku dosłownie 'podnieś mnie w górę' (tirami sù)." },
+
+          15: { type: 'daily', title: "Giorno 15: Labirynty Wenecji", location: "Wenecja", trivia: "Wenecja to 118 wysp. Nie ma tam samochodów, tylko tramwaje wodne 'Vaporetto'.", challenge: "Otwórz Google Street View na placu w Wenecji.", words: [{ it: "Scusi, dov'è il bagno?", pl: "Przepraszam, gdzie jest toaleta?" }, { it: "Dove posso trovare un taxi?", pl: "Gdzie znajdę taksówkę?" }], quiz: { question: "Jak zapytać 'Gdzie jest toaleta?'", options: ["Dov'è il bagno?", "Dov'è il ristorante?"], answer: 0 } },
+          16: { type: 'daily', title: "Giorno 16: Prawo czy lewo?", location: "Transport", trivia: "Miasta mają ZTL (Strefy Ograniczonego Ruchu). Wjazd grozi mandatem!", challenge: "Nawiguj po biurze w myślach: 'a destra', 'a sinistra'.", words: [{ it: "Vada dritto e poi a destra.", pl: "Proszę iść prosto, a potem w prawo." }, { it: "È lontano da qui?", pl: "Czy to daleko stąd?" }], quiz: { question: "Toaleta jest 'a sinistra'. Gdzie idziesz?", options: ["W prawo", "Prosto", "W lewo"], answer: 2 } },
+          17: { type: 'video', title: "Giorno 17: Relaks w Wenecji", location: "Kino Włoskie", trivia: "Dziś czas na odpoczynek dla oczu i uszu. Zapraszamy na krótki rejs!", videoId: "91oX-fM_WNE", question: "Czego NIE widać na tradycyjnych weneckich kanałach?", options: ["Mostów", "Samochodów", "Gondoli"], answer: 1 },
+          18: { type: 'daily', title: "Giorno 18: Pociągi", location: "Podróże", trivia: "Papierowy bilet na pociąg TRZEBA skasować w urządzeniu na peronie!", challenge: "Sprawdź, ile kosztuje bilet na Vaporetto (tramwaj wodny).", words: [{ it: "Un biglietto per Verona, per favore.", pl: "Poproszę bilet do Werony." }, { it: "Da quale binario parte il treno?", pl: "Z którego peronu odjeżdża pociąg?" }], quiz: { question: "Co kupujesz do pociągu?", options: ["Il bagno", "Il biglietto"], answer: 1 } },
+          19: { type: 'minigame_match', title: "Rozgrzewka Orientacyjna", location: "Podsumowanie", trivia: "Połącz w pary kierunki i miejsca w mieście.", pairs: [{it: "A destra", pl: "W prawo"}, {it: "A sinistra", pl: "W lewo"}, {it: "Il bagno", pl: "Toaleta"}, {it: "Il treno", pl: "Pociąg"}, {it: "Il biglietto", pl: "Bilet"}] },
+          20: { type: 'simulation', title: "Symulacja: Pociąg do Werony", location: "Praktyka", trivia: "Na peronie spotykasz konduktora. Przygotuj się do kontroli biletów!", scenario: { start: { bot: "Buongiorno. Biglietti, prego! (Dzień dobry. Bilety proszę!)", options: [ { text: "Ecco il biglietto. (Oto bilet.)", next: 'bilet' }, { text: "Scusi, dov'è il bagno? (Przepraszam, gdzie jest toaleta?)", next: 'bagno' } ] }, bagno: { bot: "A destra, in fondo al treno. Ma prima il biglietto! (Po prawej na końcu pociągu. Ale najpierw bilet!)", end: true }, bilet: { bot: "Grazie. Va a Verona? (Dziękuję. Jedzie Pan/Pani do Werony?)", options: [ { text: "Sì, andiamo! (Tak, jedziemy!)", next: 'koniec' } ] }, koniec: { bot: "Perfetto. Buon viaggio! (Doskonale. Dobrej podróży!) 🎉", end: true } } },
+          21: { type: 'weekend', title: "Kraj wulkanów", location: "Geografia", trivia: "Włochy to jedyny kraj w Europie z aktywnymi wulkanami (Wezuwiusz na lądzie, Etna i Stromboli na wyspach)." },
+          
+          22: { type: 'daily', title: "Giorno 22: Narodziny Supermarketu", location: "Handel", trivia: "Pierwszy supermarket powstał w 1957 w Mediolanie (Esselunga) przy udziale Nelsona Rockefellera!", challenge: "Napisz na czacie: co najbardziej doceniasz podczas prywatnych zakupów?", words: [{ it: "A che ora chiude il negozio?", pl: "O której zamykają sklep?" }, { it: "Cerco il supermercato più vicino.", pl: "Szukam najbliższego supermarketu." }], quiz: { question: "Widzisz kartkę 'Chiuso'. To znaczy:", options: ["Otwarte", "Zamknięte"], answer: 1 } },
+          23: { type: 'daily', title: "Giorno 23: Półki i Wózki", location: "Sklepy", trivia: "Włosi chętnie kupują ser na plasterki ('un etto' = 100 gramów).", challenge: "Pomyśl, na co zwrócisz największą uwagę na włoskiej półce.", words: [{ it: "Dove posso prendere un carrello?", pl: "Gdzie mogę wziąć wózek?" }, { it: "Questo prodotto manca sullo scaffale.", pl: "Tego produktu brakuje na półce." }], quiz: { question: "Gdzie zazwyczaj leży produkt?", options: ["Nel carrello", "Sullo scaffale"], answer: 1 } },
+          24: { type: 'daily', title: "Giorno 24: Okazje", location: "Biznes", trivia: "Dwa razy do roku odbywają się słynne 'Saldi' (wielkie wyprzedaże).", challenge: "Zwróć uwagę na włoskie produkty w swoim lokalnym sklepie.", words: [{ it: "C'è uno sconto su questo prodotto?", pl: "Czy jest zniżka na ten produkt?" }, { it: "È in offerta speciale.", pl: "To jest w specjalnej ofercie." }], quiz: { question: "Napis 'Sconto' oznacza:", options: ["Wyprzedane", "Rabat / Zniżka"], answer: 1 } },
+          25: { type: 'daily', title: "Giorno 25: Przy Kasie", location: "Transakcje", trivia: "Włoskie prawo nakazuje klientowi wzięcie paragonu ('scontrino')! Możesz dostać mandat za jego brak.", challenge: "Powiedz kasjerowi w myślach 'Grazie, arrivederci!'.", words: [{ it: "Posso pagare con la carta?", pl: "Mogę zapłacić kartą?" }, { it: "Posso avere lo scontrino, per favore?", pl: "Czy mogę prosić o paragon?" }], quiz: { question: "Płacenie bezgotówkowe to:", options: ["Dov'è lo scontrino?", "Posso pagare con la carta?"], answer: 1 } },
+          26: { type: 'minigame_scramble', title: "Rozgrzewka Handlowa", location: "Podsumowanie", trivia: "Ułóż zdanie przydatne przy włoskiej kasie.", sentence: "Posso avere lo scontrino", translation: "Mogę prosić o paragon?", words: ["scontrino", "Posso", "lo", "avere"] },
+          27: { type: 'simulation', title: "Symulacja: Przy Kasie", location: "Praktyka", trivia: "Wózek pełen zakupów, stoisz przy kasie. Pora zapłacić za włoskie przysmaki.", scenario: { start: { bot: "Buongiorno. Ha la carta fedeltà? (Dzień dobry. Posiada Pan/Pani kartę lojalnościową?)", options: [ { text: "No, grazie. Posso pagare con la carta? (Nie, dziękuję. Mogę zapłacić kartą?)", next: 'karta' }, { text: "Dov'è il bagno?", next: 'bagno' } ] }, bagno: { bot: "Questo è un supermercato, non un bar! (To jest supermarket, nie bar!)", end: true }, karta: { bot: "Certo. Ecco lo scontrino. (Oczywiście. Oto paragon.)", options: [ { text: "Grazie mille, arrivederci! (Bardzo dziękuję, do widzenia!)", next: 'koniec' } ] }, koniec: { bot: "Arrivederci e buona giornata! 🎉", end: true } } },
+          28: { type: 'weekend', title: "Tradycja Aperitivo", location: "Lifestyle", trivia: "Na północy Włoch przed kolacją ludzie spotykają się w barach na drinka (Spritz) z darmowymi przekąskami!" },
+
+          29: { type: 'daily', title: "Giorno 29: Dział Fresco", location: "Asortyment", trivia: "Na dziale owoców musisz założyć foliowe rękawiczki przed dotknięciem produktów!", challenge: "Zastanów się - co kupisz sobie we Włoszech?", words: [{ it: "Dove si trova il reparto frutta?", pl: "Gdzie jest dział z owocami?" }, { it: "Questo prodotto è fresco.", pl: "Ten produkt jest świeży." }], quiz: { question: "Jabłka i pomidory znajdziesz:", options: ["Reparto frutta", "La cassa"], answer: 0 } },
+          30: { type: 'daily', title: "Giorno 30: Sery i Wędliny", location: "Lombardia", trivia: "Lombardia to dom serów takich jak Gorgonzola i Mascarpone. Ceni się tu też świeżo krojone wędliny (salumi).", challenge: "Podzielcie się na czacie swoim ulubionym serem lub włoską wędliną.", words: [{ it: "Mi piace molto il formaggio locale.", pl: "Bardzo lubię lokalny ser." }, { it: "Vorrei assaggiare questo formaggio.", pl: "Chciałbym spróbować tego sera." }, { it: "Vorrei due etti di prosciutto.", pl: "Poproszę 200g szynki (2 etti)." }, { it: "Quali salumi mi consiglia?", pl: "Jakie wędliny mi Pan/Pani poleca?" }], quiz: { question: "100 gramów na dziale świeżym to we Włoszech:", options: ["Un etto", "Un chilo"], answer: 0 } },
+          31: { type: 'video', title: "Giorno 31: Supermarket", location: "Handel", trivia: "Krótka wycieczka po dużym włoskim supermarkecie. Zobacz jak szerokie potrafią być tamtejsze asortymenty!", videoId: "tP6I07e8S1s", question: "Co rzuca się w oczy na typowych stoiskach z serami i wędlinami we Włoszech?", options: ["Wszystko jest w plastiku", "Ogromny wybór świeżo krojonych, lokalnych produktów", "Brak obsługi"], answer: 1 },
+          32: { type: 'daily', title: "Giorno 32: Słodycze Werony", location: "Werona", trivia: "Werona słynie z puszystej babki 'Pandoro', rywala Panettone.", challenge: "Zjedz jakieś danie z makaronem!", words: [{ it: "Avete dei dolci tipici?", pl: "Czy macie jakieś typowe słodycze?" }, { it: "Adoro il cioccolato fondente.", pl: "Uwielbiam gorzką czekoladę." }], quiz: { question: "Gorzka czekolada to:", options: ["Dolci", "Cioccolato fondente"], answer: 1 } },
+          33: { type: 'minigame_match', title: "Rozgrzewka Smakosza", location: "Podsumowanie", trivia: "Złącz produkty spożywcze w pary.", pairs: [{it: "Il formaggio", pl: "Ser"}, {it: "I salumi", pl: "Wędliny"}, {it: "I dolci", pl: "Słodycze"}, {it: "Fresco", pl: "Świeży"}, {it: "Lo scaffale", pl: "Półka"}] },
+          34: { type: 'simulation', title: "Symulacja: Dział Fresco", location: "Praktyka", trivia: "Zapach serów i wędlin wisi w powietrzu. Sprzedawca pyta, w czym pomóc.", scenario: { start: { bot: "Prego! Dica. (Słucham! Proszę mówić.)", options: [ { text: "Vorrei due etti di prosciutto, per favore. (Poproszę 200g szynki.)", next: 'szynka' }, { text: "Un caffè.", next: 'kawa' } ] }, kawa: { bot: "Deve andare al bar per il caffè! (Po kawę musi Pan/Pani iść do baru!)", end: true }, szynka: { bot: "Ecco a Lei. Altro? (Proszę bardzo. Coś jeszcze?)", options: [ { text: "Sì, vorrei assaggiare questo formaggio. (Tak, chciałbym/chciałabym spróbować tego sera.)", next: 'koniec' } ] }, koniec: { bot: "Certo, è delizioso! (Oczywiście, jest pyszny!) 🎉", end: true } } },
+          35: { type: 'weekend', title: "Dolina Motoryzacji", location: "Motoryzacja", trivia: "Północne Włochy to dom marek takich jak Ferrari, Lamborghini czy Maserati." },
+
+          36: { type: 'daily', title: "Giorno 36: Lago di Garda", location: "Jezioro Garda", trivia: "Garda to największe jezioro we Włoszech. Jego północna część otoczona jest górami, a południowa słynie z gajów oliwnych.", challenge: "Znajdź zamek 'Castello di Sirmione' na mapie.", words: [{ it: "Che bella vista!", pl: "Ale piękny widok!" }, { it: "Il lago è fantastico.", pl: "Jezioro jest fantastyczne." }], quiz: { question: "Widzisz zachwycający widok. Powiesz:", options: ["Che bella vista!", "È chiuso"], answer: 0 } },
+          37: { type: 'daily', title: "Giorno 37: Sjesta i upał", location: "Pogoda", trivia: "W czasie upałów Włosi zamykają mniejsze sklepy na tzw. riposo (sjestę).", challenge: "Wolisz upał czy zimno? Napisz na czacie.", words: [{ it: "Oggi fa molto caldo.", pl: "Dzisiaj jest bardzo gorąco." }, { it: "Vorrei una bottiglia d'acqua, per favore.", pl: "Poproszę butelkę wody." }], quiz: { question: "Jak poprosisz o wodę?", options: ["Una bottiglia d'acqua", "Un caffè"], answer: 0 } },
+          38: { type: 'video', title: "Giorno 38: Lot nad Jeziorem", location: "Relaks", trivia: "Jezioro Garda to raj dla żeglarzy i surferów, a także idealne miejsce na powolny rejs. Zobaczmy to z lotu ptaka!", videoId: "3b0h2-Xp5e0", question: "Co charakteryzuje Jezioro Garda na nagraniach z drona?", options: ["Krystaliczna woda i góry na północy", "Brak jakichkolwiek łodzi na wodzie", "Zimowy, śnieżny krajobraz"], answer: 0 },
+          39: { type: 'daily', title: "Giorno 39: Dolce far niente", location: "Lifestyle", trivia: "Słodkie nicnierobienie – Włosi cenią bycie tu i teraz.", challenge: "Znajdź dziś chwilę na relaks!", words: [{ it: "Facciamo una passeggiata?", pl: "Zrobimy sobie spacer?" }, { it: "Stai tranquillo, c'è tempo.", pl: "Spokojnie, mamy czas." }, { it: "Quanto costa un giro in barca?", pl: "Ile kosztuje rejs łodzią?" }, { it: "A che ora parte il traghetto?", pl: "O której odpływa prom?" }], quiz: { question: "Jak zaproponujesz spacer?", options: ["Facciamo una passeggiata?", "Stai tranquillo!"], answer: 0 } },
+          40: { type: 'minigame_scramble', title: "Rozgrzewka Wakacyjna", location: "Podsumowanie", trivia: "Złóż zdanie potrzebne podczas odpoczynku.", sentence: "Vorrei una bottiglia d'acqua", translation: "Poproszę butelkę wody", words: ["d'acqua", "una", "Vorrei", "bottiglia"] },
+          41: { type: 'simulation', title: "Symulacja: Rejs", location: "Praktyka", trivia: "Upał nad jeziorem Garda. Może czas wynająć łódkę i odpocząć na wodzie?", scenario: { start: { bot: "Salve! Vuole noleggiare una barca? (Witam! Chce Pan/Pani wynająć łódź?)", options: [ { text: "Quanto costa un giro in barca? (Ile kosztuje rejs?)", next: 'cena' }, { text: "No, grazie. Sto tranquillo. (Nie, dziękuję. Odpoczywam.)", next: 'nie' } ] }, nie: { bot: "Come vuole! Buona passeggiata. (Jak Pan/Pani woli! Miłego spaceru.)", end: true }, cena: { bot: "50 euro all'ora. È una bella vista! (50 euro za godzinę. Jest piękny widok!)", options: [ { text: "Perfetto. Vorrei una bottiglia d'acqua, per favore. (Idealnie. Poproszę butelkę wody.)", next: 'koniec' } ] }, koniec: { bot: "Subito! Andiamo! (Już się robi! Płyńmy!) 🎉", end: true } } },
+          42: { type: 'weekend', title: "Monety w fontannie", location: "Tradycja", trivia: "Codziennie do Fontanny di Trevi wpada 3000 euro - trafiają na cele charytatywne." },
+
+          43: { type: 'daily', title: "Giorno 43: Walizka", location: "Przygotowania", trivia: "Włosi znani są z nienagannego stylu ('fare la bella figura' - robić dobre wrażenie).", challenge: "Zastanów się, w czym będziesz czuć się najwygodniej podczas lotu.", words: [{ it: "Devo preparare la valigia.", pl: "Muszę spakować walizkę." }, { it: "Cosa mi metto stasera?", pl: "W co się ubrać dziś wieczorem?" }], quiz: { question: "Walizka to:", options: ["La cassa", "La valigia"], answer: 1 } },
+          44: { type: 'daily', title: "Giorno 44: Gotówka", location: "Porady", trivia: "Zawsze miej przy sobie małą gotówkę na szybkie espresso w barze.", challenge: "Upewnij się na bilecie, na którym lotnisku lądujemy.", words: [{ it: "A che ora è il nostro volo?", pl: "O której jest nasz lot?" }, { it: "Dobbiamo andare all'aeroporto.", pl: "Musimy jechać na lotnisko." }], quiz: { question: "Lot po włosku to:", options: ["Il volo", "La valigia"], answer: 0 } },
+          45: { type: 'daily', title: "Giorno 45: Wszystko gotowe?", location: "Przygotowania", trivia: "Przeszliście długą drogę, usłyszycie na miejscu dużo znajomych słów!", challenge: "Przejrzyj Rozmówki i powtórz 5 zdań.", words: [{ it: "Siete pronti?", pl: "Jesteście gotowi?" }, { it: "Sì, andiamo!", pl: "Tak, jedziemy!" }], quiz: { question: "Jak wykrzykniesz: Jedziemy!?", options: ["Sì, andiamo!", "Scusa!"], answer: 0 } },
+          46: { type: 'daily', title: "Giorno 46: Wielki Finał", location: "Emocje", trivia: "Integracja pozwala poznać zespół od innej strony. Bawcie się świetnie!", challenge: "Podziękuj zespołowi za wspólną grę na czacie.", words: [{ it: "Ottimo lavoro!", pl: "Dobra robota!" }, { it: "Siamo una grande squadra.", pl: "Jesteśmy świetnym zespołem." }, { it: "Buon viaggio a tutti!", pl: "Dobrej podróży!" }], quiz: { question: "Jak pochwalić zespół?", options: ["Buon viaggio!", "Ottimo lavoro!"], answer: 1 } },
+          47: { type: 'minigame_match', title: "Egzamin Ostateczny", location: "Koniec", trivia: "Ostatnie parowanie słówek w aplikacji!", pairs: [{it: "La valigia", pl: "Walizka"}, {it: "L'aeroporto", pl: "Lotnisko"}, {it: "Il volo", pl: "Lot"}, {it: "La squadra", pl: "Zespół"}, {it: "Buon viaggio", pl: "Dobrej podróży"}] },
+          48: { type: 'simulation', title: "Symulacja: Bramka", location: "Praktyka", trivia: "Lotnisko. Za moment wylot. Ostatnia krótka rozmowa przed bramką.", scenario: { start: { bot: "Passaporto e biglietto, per favore. (Paszport i bilet, proszę.)", options: [ { text: "Ecco a Lei. A che ora è il nostro volo? (Proszę bardzo. O której jest nasz lot?)", next: 'lot' } ] }, lot: { bot: "Il volo parte tra un'ora. Gate 5. (Lot odlatuje za godzinę. Bramka 5.)", options: [ { text: "Grazie mille. Ottimo lavoro squadra! (Bardzo dziękuję. Świetna robota zespole!)", next: 'koniec' } ] }, koniec: { bot: "Buon viaggio a tutti! (Dobrej podróży wszystkim!) 🎉", end: true } } },
+          49: { type: 'weekend', title: "Dzień przed wylotem!", location: "Start", trivia: "Wtyczki od dużych laptopów mogą wymagać we Włoszech specjalnej przejściówki (Typ L)!" }
+        };
+
+        const generateAllDays = (startDateStr, daysCount) => {
+          const dates = [];
+          let currentDate = new Date(startDateStr);
+          while (dates.length < daysCount) {
+            dates.push(new Date(currentDate));
+            currentDate.setDate(currentDate.getDate() + 1);
+          }
+          return dates;
+        };
+
+        const startDateStr = '2026-06-08T00:00:00';
+        const allDaysObj = generateAllDays(startDateStr, 49);
+
+        const formatDate = (date) => date.toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit' });
+        const getDayName = (date) => ['Nd', 'Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'Sb'][date.getDay()];
+
+        function App() {
+          const [user, setUser] = useState(null); 
+          const [profile, setProfile] = useState(null); 
+          const [allUsers, setAllUsers] = useState([]); 
+          const [messagesCount, setMessagesCount] = useState(0);
+
+          const [authChecking, setAuthChecking] = useState(true);
+          const [currentTab, setCurrentTab] = useState('calendar'); 
+          const [selectedDay, setSelectedDay] = useState(null);
+          
+          const [timeTravel, setTimeTravel] = useState(false);
+          const today = timeTravel ? new Date('2026-07-28T00:00:00') : new Date();
+
+          const [showProfileModal, setShowProfileModal] = useState(false);
+          const [newBadgeAlert, setNewBadgeAlert] = useState(null);
+
+          useEffect(() => {
+            const initAuth = async () => {
+              try { await signInAnonymously(auth); } 
+              catch (err) { console.error("Auth error:", err); }
+            };
+            initAuth();
+            const unsubscribe = onAuthStateChanged(auth, (u) => { setUser(u); setAuthChecking(false); });
+            return () => unsubscribe();
+          }, []);
+
+          useEffect(() => {
+            if (!user) return;
+            const usersRef = collection(db, 'artifacts', appId, 'public', 'users');
+            const unsubscribeUsers = onSnapshot(usersRef, (snapshot) => {
+              const usersData = [];
+              snapshot.forEach(doc => usersData.push({ id: doc.id, ...doc.data() }));
+              setAllUsers(usersData);
+              setProfile(usersData.find(u => u.id === user.uid) || null);
+            });
+            
+            const msgsRef = collection(db, 'artifacts', appId, 'public', 'messages');
+            const unsubMsgs = onSnapshot(msgsRef, (snap) => {
+               let myMsgs = 0;
+               snap.forEach(doc => { if (doc.data().authorId === user.uid) myMsgs++; });
+               setMessagesCount(myMsgs);
+            });
+
+            return () => { unsubscribeUsers(); unsubMsgs(); }
+          }, [user]);
+
+          useEffect(() => {
+            if (!profile) return;
+            const evaluateBadges = () => {
+               const earned = profile.badges || [];
+               const newlyEarned = [];
+               const completed = profile.completedDays?.length || 0;
+               const challenges = profile.completedChallenges?.length || 0;
+               
+               let unlockedWordsCount = 0;
+               (profile.completedDays || []).forEach(d => {
+                  if (appData[d] && appData[d].words) unlockedWordsCount += appData[d].words.length;
+               });
+
+               const checkAndAward = (badgeId, condition) => {
+                 if (condition && !earned.includes(badgeId) && !newlyEarned.includes(badgeId)) {
+                   newlyEarned.push(badgeId);
+                 }
+               };
+
+               checkAndAward('primo', completed >= 1);
+               checkAndAward('studente', completed >= 10);
+               checkAndAward('mezzo', completed >= 25);
+               checkAndAward('esploratore', completed >= 40);
+               checkAndAward('pronto', completed >= 49);
+               checkAndAward('chiacchierone', messagesCount >= 5);
+               checkAndAward('sfida', challenges >= 10);
+               checkAndAward('maestro', unlockedWordsCount >= 20);
+
+               if (newlyEarned.length > 0) {
+                 const userRef = doc(db, 'artifacts', appId, 'public', 'users', user.uid);
+                 setDoc(userRef, { badges: [...earned, ...newlyEarned] }, { merge: true });
+                 setNewBadgeAlert(BADGES[newlyEarned[0]]);
+               }
+            };
+            evaluateBadges();
+          }, [profile, messagesCount, user]);
+
+          const handleLoginSubmit = async (name) => {
+            if (!user) return;
+            const userRef = doc(db, 'artifacts', appId, 'public', 'users', user.uid);
+            await setDoc(userRef, { name: name, completedDays: [], completedChallenges: [], badges: [], createdAt: serverTimestamp() }, { merge: true });
+          };
+
+          const markDayCompleted = async (dayNum) => {
+            if (!profile) return;
+            if (profile.completedDays?.includes(dayNum)) { setSelectedDay(null); return; }
+            const userRef = doc(db, 'artifacts', appId, 'public', 'users', user.uid);
+            await setDoc(userRef, { completedDays: [...(profile.completedDays || []), dayNum] }, { merge: true });
+            setSelectedDay(null);
+          };
+
+          const toggleChallenge = async (dayNum) => {
+            if (!profile) return;
+            const isDone = profile.completedChallenges?.includes(dayNum);
+            const newChalls = isDone ? profile.completedChallenges.filter(d => d !== dayNum) : [...(profile.completedChallenges || []), dayNum];
+            const userRef = doc(db, 'artifacts', appId, 'public', 'users', user.uid);
+            await setDoc(userRef, { completedChallenges: newChalls }, { merge: true });
+          };
+
+          if (authChecking) return <div className="min-h-screen flex items-center justify-center bg-[#FDF9F1]"><div className="animate-spin text-[#008C45]"><CheckCircle size={48} /></div></div>;
+          if (user && !profile) return <LoginScreen onSubmit={handleLoginSubmit} />;
+
+          return (
+            <div className="min-h-screen bg-[#FDF9F1] font-sans text-slate-800 flex flex-col relative">
+              <div className="fixed inset-0 pointer-events-none opacity-[0.03] bg-[radial-gradient(#006838_1px,transparent_1px)] [background-size:20px_20px]"></div>
+
+              <header className="bg-[#006838] border-b-[6px] border-[#CD212A] p-4 shadow-xl text-white sticky top-0 z-20">
+                <div className="max-w-4xl mx-auto flex justify-between items-center relative z-10">
+                  <div>
+                    <h1 className="text-2xl sm:text-3xl font-serif font-bold tracking-wide drop-shadow-md flex items-center gap-2">La Dolce Vita <span className="font-sans text-xl bg-white text-[#006838] px-1.5 py-0.5 rounded-md font-black tracking-tighter">IT</span></h1>
+                    <p className="text-green-100 text-xs sm:text-sm mt-0.5 opacity-90 italic">Ciao, {profile?.name}! Cel: Lombardia & Veneto</p>
+                  </div>
+                  <div className="flex items-center gap-2 sm:gap-4">
+                     <button onClick={() => setTimeTravel(!timeTravel)} className={`text-[10px] sm:text-xs px-2 py-1 rounded border ${timeTravel ? 'bg-yellow-400 text-slate-900 border-yellow-400 font-bold' : 'bg-white/10 border-white/30 text-white/70 hover:bg-white/20'}`}>
+                        {timeTravel ? 'Test: Odblokowane' : 'Test: Zegar'}
+                     </button>
+                     <button onClick={() => setShowProfileModal(true)} className="flex items-center justify-center w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full border border-white/30 transition-all active:scale-95 shadow-inner relative group">
+                        <User size={20} className="text-white" />
+                        {(profile?.badges?.length || 0) > 0 && (
+                          <span className="absolute -top-1 -right-1 bg-yellow-400 text-slate-900 text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-white">
+                            {profile.badges.length}
+                          </span>
+                        )}
+                     </button>
+                  </div>
+                </div>
+              </header>
+
+              <main className="flex-1 w-full max-w-4xl mx-auto p-4 sm:p-6 pb-28 relative z-10">
+                {selectedDay ? (
+                  <DayDispatcher 
+                    dayNumber={selectedDay} dateObj={allDaysObj[selectedDay - 1]} data={appData[selectedDay]} 
+                    onBack={() => setSelectedDay(null)} onComplete={() => markDayCompleted(selectedDay)}
+                    isDayCompleted={profile?.completedDays?.includes(selectedDay)}
+                    isChallengeCompleted={profile?.completedChallenges?.includes(selectedDay)} onToggleChallenge={() => toggleChallenge(selectedDay)}
+                  />
+                ) : (
+                  <>
+                    {currentTab === 'calendar' && <CalendarView today={today} profile={profile} openDay={setSelectedDay} />}
+                    {currentTab === 'dictionary' && <DictionaryView profile={profile} />}
+                    {currentTab === 'trivia' && <TriviaView profile={profile} />}
+                    {currentTab === 'challenges' && <ChallengesView profile={profile} onToggle={toggleChallenge} />}
+                    {currentTab === 'team' && <TeamView allUsers={allUsers} user={user} />}
+                    {currentTab === 'chat' && <ChatView profile={profile} allUsers={allUsers} user={user} today={today} />}
+                  </>
+                )}
+              </main>
+
+              {!selectedDay && (
+                <nav className="fixed bottom-0 w-full bg-white border-t border-slate-200 px-1 sm:px-4 py-2 pb-safe z-30 shadow-[0_-10px_20px_rgba(0,0,0,0.03)] overflow-x-auto hide-scrollbar">
+                  <div className="max-w-xl mx-auto flex justify-between items-center text-[9px] sm:text-xs font-bold text-slate-500 min-w-max px-2 gap-4 sm:gap-6">
+                    <NavItem icon={<CalendarDays size={20} />} label="Plan" isActive={currentTab === 'calendar'} onClick={() => setCurrentTab('calendar')} />
+                    <NavItem icon={<BookOpen size={20} />} label="Rozmówki" isActive={currentTab === 'dictionary'} onClick={() => setCurrentTab('dictionary')} />
+                    <NavItem icon={<BrainCircuit size={20} />} label="Ciekawostki" isActive={currentTab === 'trivia'} onClick={() => setCurrentTab('trivia')} />
+                    <NavItem icon={<CheckSquare size={20} />} label="Wyzwania" isActive={currentTab === 'challenges'} onClick={() => setCurrentTab('challenges')} />
+                    <NavItem icon={<Users size={20} />} label="Zespół" isActive={currentTab === 'team'} onClick={() => setCurrentTab('team')} />
+                    <NavItem icon={<MessageSquare size={20} />} label="Czat" isActive={currentTab === 'chat'} onClick={() => setCurrentTab('chat')} />
+                  </div>
+                </nav>
+              )}
+
+              {showProfileModal && <ProfileModal profile={profile} onClose={() => setShowProfileModal(false)} />}
+              {newBadgeAlert && <BadgeAlertModal badge={newBadgeAlert} onClose={() => setNewBadgeAlert(null)} />}
+            </div>
+          );
+        }
+
+        function NavItem({ icon, label, isActive, onClick }) {
+          return (
+            <button onClick={onClick} className={`flex flex-col items-center p-2 rounded-xl transition-all duration-300 w-16 ${isActive ? 'text-[#CD212A]' : 'hover:bg-red-50 hover:text-red-400'}`}>
+              <div className={`mb-1 transition-transform ${isActive ? 'scale-110 text-[#008C45] drop-shadow-sm' : ''}`}>{icon}</div>
+              <span className={isActive ? 'text-[#008C45]' : ''}>{label}</span>
+            </button>
+          );
+        }
+
+        function LoginScreen({ onSubmit }) {
+          const [name, setName] = useState('');
+          const [password, setPassword] = useState('');
+          const [error, setError] = useState('');
+
+          const handleSubmit = (e) => {
+            e.preventDefault();
+            const inputName = name.trim();
+            if (inputName.length < 2) { setError('Wpisz swoje imię!'); return; }
+            const matchedName = Object.keys(USERS_CREDENTIALS).find(key => key.toLowerCase() === inputName.toLowerCase());
+            if (!matchedName) { setError('Nie znaleziono takiego imienia na liście wyjazdowej.'); return; }
+            if (USERS_CREDENTIALS[matchedName] !== password) { setError('Niepoprawne hasło.'); return; }
+            onSubmit(matchedName);
+          };
+
+          return (
+            <div className="min-h-screen flex items-center justify-center bg-[#FDF9F1] p-4 relative overflow-hidden">
+              <div className="fixed inset-0 pointer-events-none opacity-[0.03] bg-[radial-gradient(#006838_1px,transparent_1px)] [background-size:20px_20px]"></div>
+              <div className="bg-white p-8 rounded-3xl shadow-xl w-full max-w-md animate-in zoom-in-95 border-t-8 border-t-[#008C45] border-b-8 border-b-[#CD212A] relative z-10">
+                <div className="text-center mb-8">
+                  <h1 className="text-4xl font-serif font-bold text-[#006838] mb-2">Benvenuto! 🇮🇹</h1>
+                  <p className="text-slate-500 italic">Przygotuj się na wyjazd do Włoch</p>
+                </div>
+                {error && <div className="bg-red-50 text-red-600 p-3 rounded-xl mb-4 text-sm font-semibold border border-red-100">{error}</div>}
+                <form onSubmit={handleSubmit} className="space-y-5">
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 mb-1">Twoje Imię</label>
+                    <input type="text" value={name} onChange={e => setName(e.target.value)} className="w-full border-2 border-slate-200 bg-slate-50 p-3 rounded-xl focus:border-[#008C45] outline-none" placeholder="Np. Anna" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 mb-1">Hasło</label>
+                    <input type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full border-2 border-slate-200 bg-slate-50 p-3 rounded-xl focus:border-[#008C45] outline-none" placeholder="Hasło" />
+                  </div>
+                  <button type="submit" className="w-full bg-[#CD212A] text-white font-bold py-4 rounded-xl mt-4 hover:bg-red-700 shadow-lg text-lg uppercase tracking-wider">Andiamo!</button>
+                </form>
+              </div>
+            </div>
+          );
+        }
+
+        function BadgeAlertModal({ badge, onClose }) {
+          return (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+               <div className="bg-white p-8 rounded-3xl max-w-sm w-full text-center shadow-2xl animate-in zoom-in-95 border-4 border-yellow-400 relative overflow-hidden">
+                  <div className="absolute -top-4 -left-4 text-4xl animate-bounce">🎉</div>
+                  <div className="absolute -bottom-4 -right-4 text-4xl animate-bounce delay-100">🍕</div>
+                  <div className="absolute top-1/2 left-4 text-3xl animate-pulse">✨</div>
+                  <div className="absolute top-1/3 right-4 text-3xl animate-pulse delay-200">✨</div>
+                  <h2 className="text-xl font-bold text-slate-500 uppercase tracking-widest mb-4">Nowa Odznaka!</h2>
+                  <div className="text-7xl mb-4 drop-shadow-md">{badge.icon}</div>
+                  <h3 className="text-2xl font-serif font-bold text-[#006838] mb-2">{badge.name}</h3>
+                  <p className="text-slate-600 font-medium mb-8">{badge.desc}</p>
+                  <button onClick={onClose} className="bg-gradient-to-r from-yellow-400 to-amber-500 text-slate-900 font-bold py-3 px-8 rounded-full shadow-md hover:scale-105 active:scale-95 transition-all">Fantastico!</button>
+               </div>
+            </div>
+          )
+        }
+
+        function ProfileModal({ profile, onClose }) {
+          const myBadges = profile?.badges || [];
+          return (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
+               <div className="bg-white w-full max-w-md rounded-3xl overflow-hidden shadow-2xl animate-in zoom-in-95 flex flex-col max-h-[85vh]">
+                  <div className="bg-[#006838] p-6 text-white text-center relative border-b-4 border-[#CD212A] shrink-0">
+                     <button onClick={onClose} className="absolute top-4 right-4 bg-white/20 w-8 h-8 rounded-full flex items-center justify-center font-bold hover:bg-white/40">X</button>
+                     <div className="w-16 h-16 bg-white text-[#006838] rounded-full mx-auto flex items-center justify-center text-2xl font-bold mb-3 shadow-md border-4 border-green-700">{profile?.name?.substring(0, 2).toUpperCase()}</div>
+                     <h2 className="text-2xl font-serif font-bold">{profile?.name}</h2>
+                     <p className="text-green-100 text-sm">Twój profil i osiągnięcia</p>
+                  </div>
+                  <div className="p-6 overflow-y-auto bg-[#FDF9F1] flex-1">
+                     <h3 className="font-bold text-slate-400 uppercase tracking-widest text-xs mb-4 text-center">Il Medagliere (Gablota Odznak)</h3>
+                     <div className="grid grid-cols-2 gap-4">
+                        {Object.values(BADGES).map(b => {
+                           const isEarned = myBadges.includes(b.id);
+                           return (
+                             <div key={b.id} className={`p-4 rounded-2xl flex flex-col items-center text-center border-2 transition-all ${isEarned ? 'bg-white border-yellow-400 shadow-md' : 'bg-slate-100 border-slate-200 opacity-60 grayscale'}`}>
+                                <div className="text-4xl mb-2 drop-shadow-sm">{b.icon}</div>
+                                <h4 className={`font-serif font-bold text-sm mb-1 ${isEarned ? 'text-slate-800' : 'text-slate-500'}`}>{b.name}</h4>
+                                <p className="text-[10px] text-slate-500 leading-tight">{b.desc}</p>
+                             </div>
+                           )
+                        })}
+                     </div>
+                  </div>
+               </div>
+            </div>
+          )
+        }
+
+        function CalendarView({ today, profile, openDay }) {
+          const completedCount = profile?.completedDays?.length || 0;
+          const isAllCompleted = completedCount === 49;
+          const [showFinale, setShowFinale] = useState(false);
+
+          const isUnlocked = (dateObj) => {
+            const checkDate = new Date(dateObj); checkDate.setHours(0,0,0,0);
+            const todayDate = new Date(today); todayDate.setHours(0,0,0,0);
+            return checkDate <= todayDate;
+          };
+
+          return (
+            <div className="animate-in fade-in duration-500">
+              <div className="mb-6 bg-white p-5 rounded-2xl shadow-sm border-l-4 border-l-[#008C45] flex gap-4 items-start relative overflow-hidden">
+                <div className="bg-green-50 p-3 rounded-full text-[#006838] shrink-0 border border-green-100"><Plane size={24} /></div>
+                <div className="relative z-10">
+                  <h2 className="text-xl sm:text-2xl font-serif font-bold mb-1 text-[#006838]">Plan Podróży</h2>
+                  <p className="text-sm text-slate-600">Rozwiązuj zadania. Piątki to mini-gry, a weekendy to czysty relaks!</p>
+                </div>
+              </div>
+
+              <div className="bg-white p-3 sm:p-5 rounded-3xl shadow-sm border border-slate-200 relative overflow-hidden">
+                <div className="grid grid-cols-7 gap-1.5 sm:gap-3 mb-2 text-center text-[9px] sm:text-xs font-bold text-slate-400 uppercase tracking-widest">
+                    <div>Pn</div><div>Wt</div><div>Śr</div><div>Cz</div><div>Pt</div><div className="text-blue-400">Sb</div><div className="text-blue-400">Nd</div>
+                </div>
+
+                <div className="grid grid-cols-7 gap-1.5 sm:gap-3 relative z-10">
+                    {allDaysObj.map((dateObj, idx) => {
+                      const dayNum = idx + 1;
+                      const unlocked = isUnlocked(dateObj);
+                      const isCompleted = profile?.completedDays?.includes(dayNum);
+                      const data = appData[dayNum];
+                      
+                      const isWeekend = data?.type === 'weekend' || data?.type === 'simulation';
+                      const isGame = data?.type.includes('minigame');
+                      const isVideo = data?.type === 'video';
+
+                      let btnClass = "relative aspect-[4/5] rounded-xl flex flex-col items-center justify-center p-1 transition-all shadow-sm border-2 font-serif group ";
+                      if (!unlocked) { btnClass += "bg-slate-50 border-slate-100 text-slate-300 cursor-not-allowed"; } 
+                      else if (isCompleted) { btnClass += "bg-green-50 border-[#008C45] text-[#006838] hover:bg-green-100 cursor-pointer"; } 
+                      else if (isWeekend) { btnClass += "bg-blue-50 border-blue-200 text-blue-800 hover:bg-blue-100 hover:-translate-y-1 cursor-pointer"; } 
+                      else if (isGame) { btnClass += "bg-amber-50 border-amber-300 text-amber-800 hover:bg-amber-100 hover:-translate-y-1 cursor-pointer"; } 
+                      else if (isVideo) { btnClass += "bg-purple-50 border-purple-300 text-purple-800 hover:bg-purple-100 hover:-translate-y-1 cursor-pointer"; } 
+                      else { btnClass += "bg-white border-orange-200 text-slate-700 hover:border-orange-400 hover:-translate-y-1 cursor-pointer"; }
+
+                      return (
+                          <button key={dayNum} disabled={!unlocked} onClick={() => openDay(dayNum)} className={btnClass}>
+                            <span className={`text-lg sm:text-2xl font-black leading-none ${!unlocked ? 'opacity-50' : ''}`}>{dayNum}</span>
+                            <div className="h-4 sm:h-5 flex items-center justify-center mt-0.5">
+                              {!unlocked && <Lock className="w-3 h-3 text-slate-300" />}
+                              {unlocked && isGame && !isCompleted && <Award className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-500" />}
+                              {unlocked && isWeekend && !isCompleted && <Coffee className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-400" />}
+                              {unlocked && isVideo && !isCompleted && <Video className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-purple-500" />}
+                              {isCompleted && <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#008C45]" />}
+                            </div>
+                            <span className="text-[8px] sm:text-[9px] font-sans mt-auto pb-0.5 tracking-tight font-medium opacity-60 mix-blend-multiply">{formatDate(dateObj)}</span>
+                          </button>
+                      );
+                    })}
+                </div>
+              </div>
+
+              {/* Finał gry */}
+              <div className="mt-8 mb-8">
+                {isAllCompleted ? (
+                  <button onClick={() => setShowFinale(true)} className="w-full bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-500 text-slate-900 p-6 rounded-3xl shadow-xl shadow-yellow-500/30 border-4 border-yellow-300 text-center animate-pulse hover:scale-105 transition-transform">
+                     <h3 className="text-2xl font-serif font-bold mb-1">Świętuj sukces! 🥂</h3>
+                     <p className="font-bold">Kliknij, by otworzyć</p>
+                  </button>
+                ) : (
+                  <div className="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-4">
+                    <div className="bg-amber-50 p-3 rounded-full shrink-0"><Medal className="w-6 h-6 text-amber-500" /></div>
+                    <div className="w-full">
+                      <div className="flex justify-between mb-1 text-sm font-bold">
+                         <span className="text-slate-600">Wielki Finał</span><span className="text-amber-600">{completedCount} / 49</span>
+                      </div>
+                      <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden border border-slate-200">
+                         <div className="bg-gradient-to-r from-amber-400 to-orange-500 h-full transition-all duration-1000" style={{width: `${(completedCount / 49) * 100}%`}}></div>
+                      </div>
+                      <p className="text-[10px] sm:text-xs text-slate-400 mt-1.5">Ukończ wszystkie dni, by z dumą zamknąć przygotowania!</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {showFinale && (
+                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm animate-in fade-in duration-500" onClick={() => setShowFinale(false)}>
+                    <div className="bg-gradient-to-br from-[#008C45] to-[#004A28] text-white p-8 sm:p-12 rounded-3xl max-w-lg w-full text-center shadow-2xl border-4 border-yellow-400 relative overflow-hidden" onClick={e => e.stopPropagation()}>
+                       <div className="absolute -top-10 -left-10 text-9xl opacity-10 rotate-12">✈️</div>
+                       <div className="absolute -bottom-10 -right-10 text-9xl opacity-10 -rotate-12">🍕</div>
+                       <h2 className="text-4xl font-serif font-bold text-yellow-300 mb-4 drop-shadow-md">Bravissimo! 🥂</h2>
+                       <p className="text-lg font-medium mb-6">Ukończyłeś wszystkie 49 dni przygotowań językowo-kulturowych. Dziękujemy za wspólne zaangażowanie i zabawę!</p>
+                       <div className="bg-white/20 p-5 rounded-xl border border-white/30 backdrop-blur-sm inline-block">
+                         <p className="text-2xl font-bold italic drop-shadow-sm">Pakuj walizki. Lombardia i Veneto czekają!</p>
+                       </div>
+                       <button onClick={() => setShowFinale(false)} className="mt-8 bg-white text-[#006838] font-bold py-3 px-8 rounded-full shadow-md hover:bg-slate-50 transition-colors">Super!</button>
+                    </div>
+                 </div>
+              )}
+            </div>
+          );
+        }
+
+        function DayDispatcher(props) {
+          const { data, onBack } = props;
+          if (!data) return <div className="text-center py-20 bg-white rounded-3xl"><button onClick={onBack} className="bg-slate-200 px-6 py-3 rounded-xl">Wróć</button></div>;
+
+          const isGame = data.type.includes('minigame');
+          const isSim = data.type === 'simulation';
+          const isVid = data.type === 'video';
+          const isWknd = data.type === 'weekend';
+
+          let theme = 'bg-gradient-to-br from-[#006838] to-[#004A28]';
+          let Icon = MapPin;
+          
+          if (isGame) { theme = 'bg-gradient-to-br from-amber-500 to-orange-600'; Icon = Award; }
+          else if (isSim || isWknd) { theme = 'bg-gradient-to-br from-blue-500 to-cyan-600'; Icon = Coffee; }
+          else if (isVid) { theme = 'bg-gradient-to-br from-purple-500 to-indigo-600'; Icon = Video; }
+
+          return (
+            <div className="animate-in slide-in-from-right-8 duration-300 pb-10">
+              <button onClick={props.onBack} className="flex items-center text-[#CD212A] font-bold mb-4 hover:bg-red-50 px-4 py-2 rounded-full transition-colors bg-white border border-red-100 shadow-sm w-fit">
+                <ArrowLeft className="mr-2 w-4 h-4" /> Wróć do Planu
+              </button>
+              <div className="bg-white rounded-3xl shadow-xl overflow-hidden mb-6 border border-slate-100">
+                <div className={`p-6 sm:p-8 text-white relative ${theme}`}>
+                  <div className="flex justify-between items-start gap-4 relative z-10">
+                    <div>
+                      <p className="text-[10px] sm:text-xs font-bold uppercase tracking-widest opacity-80 mb-2 flex items-center gap-1.5 font-sans">
+                        <CalendarDays size={14} /> {getDayName(props.dateObj)}, {formatDate(props.dateObj)} • {data.location}
+                      </p>
+                      <h2 className="text-2xl sm:text-3xl font-serif font-bold leading-tight drop-shadow-sm">{data.title}</h2>
+                    </div>
+                    <Icon className="w-10 h-10 sm:w-12 sm:h-12 opacity-80 shrink-0" />
+                  </div>
+                </div>
+                <div className="p-5 sm:p-8 bg-[#FDFBF7]">
+                  {data.type === 'daily' && <StandardDayContent {...props} />}
+                  {data.type === 'weekend' && <WeekendDayContent {...props} />}
+                  {data.type === 'minigame_match' && <MinigameMatchContent {...props} />}
+                  {data.type === 'minigame_scramble' && <MinigameScrambleContent {...props} />}
+                  {data.type === 'simulation' && <SimulationContent {...props} />}
+                  {data.type === 'video' && <VideoDayContent {...props} />}
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        function StandardDayContent({ data, isChallengeCompleted, onToggleChallenge, isDayCompleted, onComplete }) {
+          const [quizFinished, setQuizFinished] = useState(false);
+          const canComplete = isDayCompleted || quizFinished;
+          return (
+            <div className="space-y-8">
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-slate-200">
+                  <h3 className="font-serif font-bold text-[#006838] mb-3 text-lg flex items-center gap-2"><BrainCircuit size={20} /> Ciekawostka dnia</h3>
+                  <p className="text-slate-700 text-sm sm:text-base leading-relaxed">{data.trivia}</p>
+                </div>
+                {data.challenge && (
+                  <div className="bg-orange-50 rounded-2xl p-5 sm:p-6 border border-orange-200 flex flex-col justify-between">
+                    <div>
+                      <h3 className="font-serif font-bold text-orange-900 mb-3 text-lg flex items-center gap-2"><Target size={20} /> Wyzwanie</h3>
+                      <p className="text-orange-800 text-sm sm:text-base mb-4">{data.challenge}</p>
+                    </div>
+                    <button onClick={onToggleChallenge} className={`flex items-center justify-center gap-2 w-full py-3 rounded-xl font-bold transition-all border-2 ${isChallengeCompleted ? 'bg-orange-500 border-orange-500 text-white shadow-md' : 'bg-white border-orange-300 text-orange-700 hover:bg-orange-100'}`}>
+                      {isChallengeCompleted ? <CheckCircle size={20} /> : <div className="w-5 h-5 rounded-full border-2 border-orange-400" />}
+                      {isChallengeCompleted ? 'Zrobione!' : 'Odhacz zadanie'}
+                    </button>
+                  </div>
+                )}
+              </div>
+              {data.words && (
+                <div className="border-t border-slate-200 pt-6">
+                  <h3 className="text-xl font-serif font-bold mb-4 flex items-center gap-2 text-[#006838]"><Volume2 className="text-[#CD212A]" /> Rozmówki</h3>
+                  <div className="grid gap-3 sm:grid-cols-2">{data.words.map((word, idx) => <WordCard key={idx} word={word} />)}</div>
+                </div>
+              )}
+              {data.quiz && (
+                <div className="border-t border-slate-200 pt-6 bg-white -mx-5 -mb-5 sm:-mx-8 sm:-mb-8 p-5 sm:p-8">
+                  <h3 className="text-xl font-serif font-bold mb-4 flex items-center gap-2"><Search className="text-slate-400" size={22}/> Szybki Quiz</h3>
+                  <SingleQuiz quizData={data.quiz} onFinish={() => setQuizFinished(true)} />
+                  <CompleteButton isDayCompleted={isDayCompleted} canComplete={canComplete} onComplete={onComplete} icon="🍕" lockedText="Rozwiąż quiz najpierw!" />
+                </div>
+              )}
+            </div>
+          );
+        }
+
+        function WeekendDayContent({ data, isDayCompleted, onComplete }) {
+          return (
+            <div className="space-y-6">
+              <div className="bg-white rounded-2xl p-8 text-center shadow-sm border border-blue-100">
+                <Coffee className="w-16 h-16 mx-auto text-blue-300 mb-4" />
+                <h3 className="font-serif font-bold text-blue-900 mb-4 text-2xl">Weekendowy luz</h3>
+                <p className="text-slate-700 text-lg leading-relaxed">{data.trivia}</p>
+              </div>
+              <CompleteButton isDayCompleted={isDayCompleted} canComplete={true} onComplete={onComplete} icon="☕" />
+            </div>
+          )
+        }
+
+        function VideoDayContent({ data, isDayCompleted, onComplete }) {
+          const [quizFinished, setQuizFinished] = useState(false);
+          return (
+            <div className="space-y-6">
+              <div className="bg-purple-50 p-4 rounded-2xl border border-purple-200 text-purple-900 font-medium">{data.trivia}</div>
+              <div className="aspect-video w-full rounded-2xl overflow-hidden shadow-md border-4 border-slate-800 bg-black">
+                 <iframe width="100%" height="100%" src={`https://www.youtube.com/embed/${data.videoId}?rel=0`} title="YouTube" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
+              </div>
+              <div className="border-t border-slate-200 pt-6">
+                 <SingleQuiz quizData={{question: data.question, options: data.options, answer: data.answer}} onFinish={() => setQuizFinished(true)} />
+              </div>
+              <CompleteButton isDayCompleted={isDayCompleted} canComplete={isDayCompleted || quizFinished} onComplete={onComplete} icon="🎬" lockedText="Obejrzyj i odpowiedz!" />
+            </div>
+          )
+        }
+
+        function MinigameMatchContent({ data, isDayCompleted, onComplete }) {
+          const [shuffledIt, setShuffledIt] = useState([]);
+          const [shuffledPl, setShuffledPl] = useState([]);
+          const [selectedIt, setSelectedIt] = useState(null);
+          const [selectedPl, setSelectedPl] = useState(null);
+          const [matched, setMatched] = useState([]);
+
+          useEffect(() => {
+            setShuffledIt([...data.pairs].sort(() => Math.random() - 0.5));
+            setShuffledPl([...data.pairs].sort(() => Math.random() - 0.5));
+          }, [data.pairs]);
+
+          useEffect(() => {
+            if (selectedIt && selectedPl) {
+              const isMatch = data.pairs.some(p => p.it === selectedIt && p.pl === selectedPl);
+              setTimeout(() => {
+                if (isMatch) setMatched(prev => [...prev, selectedIt]);
+                setSelectedIt(null); setSelectedPl(null);
+              }, 400);
+            }
+          }, [selectedIt, selectedPl, data.pairs]);
+
+          const gameFinished = matched.length === data.pairs.length;
+          return (
+            <div className="space-y-6">
+              <div className="bg-amber-50 p-4 rounded-2xl border border-amber-200 text-amber-900 font-medium">{data.trivia}</div>
+              {!gameFinished ? (
+                 <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                       <h4 className="text-center font-bold text-slate-400 text-xs uppercase mb-2">Po Włosku</h4>
+                       {shuffledIt.map(w => {
+                         const isMatched = matched.includes(w.it); const isSelected = selectedIt === w.it;
+                         let cls = "w-full p-3 rounded-xl border-2 font-bold text-sm sm:text-base text-center transition-all ";
+                         if (isMatched) cls += "opacity-0 pointer-events-none"; else if (isSelected) cls += "bg-amber-400 border-amber-500 text-slate-900 scale-105"; else cls += "bg-white border-slate-200 text-slate-700 hover:border-amber-300 shadow-sm";
+                         return <button key={'it'+w.it} onClick={() => setSelectedIt(w.it)} className={cls}>{w.it}</button>
+                       })}
+                    </div>
+                    <div className="space-y-2">
+                       <h4 className="text-center font-bold text-slate-400 text-xs uppercase mb-2">Po Polsku</h4>
+                       {shuffledPl.map(w => {
+                         const isMatched = matched.includes(w.it); const isSelected = selectedPl === w.pl;
+                         let cls = "w-full p-3 rounded-xl border-2 font-bold text-sm sm:text-base text-center transition-all ";
+                         if (isMatched) cls += "opacity-0 pointer-events-none"; else if (isSelected) cls += "bg-amber-400 border-amber-500 text-slate-900 scale-105"; else cls += "bg-white border-slate-200 text-slate-700 hover:border-amber-300 shadow-sm";
+                         return <button key={'pl'+w.pl} onClick={() => setSelectedPl(w.pl)} className={cls}>{w.pl}</button>
+                       })}
+                    </div>
+                 </div>
+              ) : (
+                 <div className="bg-green-50 p-8 rounded-2xl text-center border-2 border-[#008C45]">
+                   <CheckCircle className="w-16 h-16 mx-auto text-[#008C45] mb-4" />
+                   <h3 className="text-2xl font-serif font-bold text-[#006838]">Complimenti!</h3>
+                 </div>
+              )}
+              <CompleteButton isDayCompleted={isDayCompleted} canComplete={isDayCompleted || gameFinished} onComplete={onComplete} icon="🏆" lockedText="Połącz wszystkie pary!" />
+            </div>
+          )
+        }
+
+        function MinigameScrambleContent({ data, isDayCompleted, onComplete }) {
+          const [bank, setBank] = useState([]);
+          const [line, setLine] = useState([]);
+          useEffect(() => { setBank([...data.words].sort(() => Math.random() - 0.5)); }, [data.words]);
+          const moveWord = (word, fromBank) => {
+            if (fromBank) { setBank(prev => prev.filter(w => w !== word)); setLine(prev => [...prev, word]); } 
+            else { setLine(prev => prev.filter(w => w !== word)); setBank(prev => [...prev, word]); }
+          }
+          const gameFinished = line.join(" ") === data.sentence;
+          return (
+            <div className="space-y-6">
+              <div className="bg-amber-50 p-4 rounded-2xl border border-amber-200 text-amber-900">
+                <p className="font-bold mb-1">Przetłumacz:</p><p className="text-lg italic">"{data.translation}"</p>
+              </div>
+              <div className="bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl p-4 min-h-[80px] flex flex-wrap gap-2 content-start">
+                {line.map((w, i) => <button key={'line'+i} onClick={() => moveWord(w, false)} className="bg-amber-400 text-slate-900 font-bold px-4 py-2 rounded-lg shadow-sm active:scale-95 transition-transform">{w}</button>)}
+                {line.length === 0 && <span className="text-slate-400 m-auto text-sm">Klikaj klocki poniżej</span>}
+              </div>
+              <div className="flex flex-wrap gap-2 justify-center py-4">
+                 {bank.map((w, i) => <button key={'bank'+i} onClick={() => moveWord(w, true)} className="bg-white border-2 border-slate-200 text-slate-700 font-bold px-4 py-2 rounded-lg shadow-sm hover:border-amber-400 active:scale-95 transition-transform">{w}</button>)}
+              </div>
+              {gameFinished && <div className="text-center text-[#008C45] font-bold text-xl animate-in fade-in">Perfetto! 🎯</div>}
+              <CompleteButton isDayCompleted={isDayCompleted} canComplete={isDayCompleted || gameFinished} onComplete={onComplete} icon="🏆" lockedText="Ułóż poprawne zdanie!" />
+            </div>
+          )
+        }
+
+        function SimulationContent({ data, isDayCompleted, onComplete }) {
+          const [history, setHistory] = useState([]);
+          const [currentNodeId, setCurrentNodeId] = useState('start');
+          useEffect(() => { if (history.length === 0) { setHistory([{ sender: 'bot', text: data.scenario.start.bot }]); } }, []);
+          const handleChoice = (opt) => {
+            setHistory(prev => [...prev, { sender: 'user', text: opt.text }]);
+            setTimeout(() => {
+               const nextNode = data.scenario[opt.next];
+               if (nextNode) { setHistory(prev => [...prev, { sender: 'bot', text: nextNode.bot }]); setCurrentNodeId(opt.next); }
+            }, 600);
+          }
+          const isEnd = data.scenario[currentNodeId]?.end;
+          return (
+            <div className="space-y-6">
+               <div className="bg-blue-50 p-4 rounded-2xl border border-blue-200 text-blue-900 font-medium text-sm">{data.trivia}</div>
+              <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm flex flex-col h-[400px]">
+                 <div className="bg-slate-100 p-3 text-center border-b border-slate-200 font-bold text-slate-600 text-sm">Włoch lokalny (Symulator)</div>
+                 <div className="flex-1 p-4 overflow-y-auto space-y-4">
+                    {history.map((msg, i) => (
+                      <div key={i} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                         <div className={`max-w-[80%] p-3 rounded-2xl text-sm ${msg.sender === 'user' ? 'bg-[#008C45] text-white rounded-tr-none' : 'bg-slate-100 text-slate-800 rounded-tl-none border border-slate-200'}`}>{msg.text}</div>
+                      </div>
+                    ))}
+                 </div>
+                 {!isEnd && data.scenario[currentNodeId]?.options && (
+                    <div className="p-3 bg-slate-50 border-t border-slate-200 flex flex-col gap-2">
+                      <span className="text-[10px] uppercase font-bold text-slate-400 text-center mb-1">Wybierz odpowiedź:</span>
+                      {data.scenario[currentNodeId].options.map((opt, i) => (
+                        <button key={i} onClick={() => handleChoice(opt)} className="bg-white border-2 border-blue-200 hover:border-blue-400 text-blue-900 font-bold p-3 rounded-xl transition-all active:scale-95 text-left text-sm">{opt.text}</button>
+                      ))}
+                    </div>
+                 )}
+              </div>
+              <CompleteButton isDayCompleted={isDayCompleted} canComplete={isDayCompleted || isEnd} onComplete={onComplete} icon="💬" lockedText="Dokończ rozmowę!" />
+            </div>
+          )
+        }
+
+        function WordCard({ word }) {
+          const speakWord = (text) => {
+            if ('speechSynthesis' in window) {
+              window.speechSynthesis.cancel();
+              const u = new SpeechSynthesisUtterance(text); u.lang = 'it-IT'; u.rate = 0.85; window.speechSynthesis.speak(u);
+            }
+          };
+          return (
+            <div className="flex items-center justify-between bg-white p-3 sm:p-4 rounded-xl border border-slate-200 hover:border-[#008C45] shadow-sm transition-all group">
+              <div className="pr-3">
+                <p className="font-bold text-base sm:text-lg text-slate-800 leading-tight">{word.it}</p>
+                <p className="text-slate-500 text-xs sm:text-sm mt-0.5">{word.pl}</p>
+              </div>
+              <button onClick={() => speakWord(word.it)} className="w-10 h-10 rounded-full bg-[#FDF9F1] text-[#CD212A] flex items-center justify-center group-hover:bg-[#CD212A] group-hover:text-white transition-colors shrink-0"><Volume2 className="w-5 h-5" /></button>
+            </div>
+          );
+        }
+
+        function SingleQuiz({ quizData, onFinish }) {
+          const [selected, setSelected] = useState(null);
+          const handleSelect = (idx) => { setSelected(idx); if (onFinish) onFinish(); };
+          return (
+            <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200">
+              <p className="font-bold text-base sm:text-lg mb-5 text-slate-800 font-serif">{quizData.question}</p>
+              <div className="space-y-2 sm:space-y-3">
+                {quizData.options.map((opt, idx) => {
+                  let btnClass = "w-full text-left p-3 sm:p-4 rounded-xl border-2 font-medium transition-all text-sm sm:text-base ";
+                  if (selected === null) btnClass += "bg-white border-slate-200 hover:border-[#008C45]";
+                  else if (idx === quizData.answer) btnClass += "bg-green-100 border-[#008C45] text-green-900"; 
+                  else if (idx === selected) btnClass += "bg-red-100 border-[#CD212A] text-red-900"; 
+                  else btnClass += "bg-white border-slate-200 opacity-50"; 
+                  return <button key={idx} disabled={selected !== null} onClick={() => handleSelect(idx)} className={btnClass}>{opt}</button>;
+                })}
+              </div>
+            </div>
+          );
+        }
+
+        function CompleteButton({ isDayCompleted, canComplete, onComplete, icon, lockedText }) {
+          return (
+            <div className="flex justify-center mt-8">
+              <button onClick={onComplete} disabled={!canComplete} className={`flex items-center gap-3 px-8 py-4 rounded-full text-lg font-bold transition-all transform ${isDayCompleted ? 'bg-slate-200 text-slate-500 shadow-none' : canComplete ? 'bg-[#008C45] text-white hover:bg-[#006838] shadow-lg shadow-green-700/30 hover:scale-105 active:scale-95 cursor-pointer animate-pulse' : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-80'}`}>
+                {isDayCompleted ? <><CheckCircle className="w-6 h-6" /> Zaliczone</> : <>{!canComplete && <Lock className="w-5 h-5 mr-1" />}{!canComplete ? (lockedText || 'Zablokowane') : `Zalicz ten dzień! ${icon}`}</>}
+              </button>
+            </div>
+          )
+        }
+
+        const getUnlockedData = (profile) => {
+          const completed = profile?.completedDays || [];
+          const words = []; const trivias = []; const challenges = [];
+          completed.sort((a,b) => a - b).forEach(dayNum => {
+            const data = appData[dayNum];
+            if (data) { 
+              const cleanTitle = data.title.replace(/^Giorno \d+: /, ''); const formattedTitle = `Dzień ${dayNum}: ${cleanTitle}`;
+              if (data.words) data.words.forEach(w => words.push({ day: dayNum, ...w }));
+              if (data.trivia) trivias.push({ day: dayNum, text: data.trivia, title: formattedTitle });
+              if (data.challenge) challenges.push({ day: dayNum, text: data.challenge, title: formattedTitle });
+            }
+          });
+          return { words, trivias, challenges };
+        };
+        const groupItemsByWeek = (items) => {
+          const grouped = {};
+          items.forEach(item => { const week = Math.ceil(item.day / 7); if (!grouped[week]) grouped[week] = []; grouped[week].push(item); });
+          return grouped;
+        };
+
+        function DictionaryView({ profile }) {
+          const { words } = getUnlockedData(profile);
+          if (words.length === 0) return <EmptyState icon={<BookOpen size={48} />} msg="Zalicz pierwsze dni, aby odkryć słówka!" />;
+          const grouped = groupItemsByWeek(words);
+          return (
+            <div className="animate-in fade-in pb-4">
+              <h2 className="text-2xl font-serif font-bold mb-6 text-[#006838]">Rozmówki</h2>
+              {Object.keys(grouped).sort().map(wNum => (
+                <div key={wNum} className="mb-8 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                  <h3 className="text-xs font-bold text-white bg-[#006838] inline-block px-3 py-1 rounded-full uppercase tracking-wider mb-4">{WEEK_THEMES[wNum]}</h3>
+                  <div className="grid gap-3 sm:grid-cols-2">{grouped[wNum].map((w, idx) => <WordCard key={idx} word={w} />)}</div>
+                </div>
+              ))}
+            </div>
+          );
+        }
+
+        function TriviaView({ profile }) {
+          const { trivias } = getUnlockedData(profile);
+          if (trivias.length === 0) return <EmptyState icon={<BrainCircuit size={48} />} msg="Zalicz pierwsze dni, aby odkryć ciekawostki!" />;
+          const grouped = groupItemsByWeek(trivias);
+          return (
+            <div className="animate-in fade-in pb-4">
+              <h2 className="text-2xl font-serif font-bold mb-6 text-[#006838]">Baza Ciekawostek</h2>
+              {Object.keys(grouped).sort().map(wNum => (
+                <div key={wNum} className="mb-8">
+                  <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3 px-2">{WEEK_THEMES[wNum]}</h3>
+                  <div className="space-y-3">
+                    {grouped[wNum].map((t, idx) => (
+                      <div key={idx} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm border-l-4 border-l-[#CD212A]">
+                        <h4 className="font-serif font-bold text-slate-800 mb-1">{t.title}</h4>
+                        <p className="text-slate-600 text-sm leading-relaxed">{t.text}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          );
+        }
+
+        function ChallengesView({ profile, onToggle }) {
+          const { challenges } = getUnlockedData(profile);
+          const completedChalls = profile?.completedChallenges || [];
+          if (challenges.length === 0) return <EmptyState icon={<CheckSquare size={48} />} msg="Zalicz pierwsze dni, aby odsłonić listę wyzwań!" />;
+          const grouped = groupItemsByWeek(challenges);
+          return (
+            <div className="animate-in fade-in pb-4">
+              <h2 className="text-2xl font-serif font-bold mb-6 text-[#006838]">Twoje Wyzwania</h2>
+              {Object.keys(grouped).sort().map(wNum => (
+                <div key={wNum} className="mb-8">
+                   <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3 px-2">{WEEK_THEMES[wNum]}</h3>
+                   <div className="space-y-3">
+                     {grouped[wNum].map((c, idx) => {
+                       const isDone = completedChalls.includes(c.day);
+                       return (
+                         <div key={idx} className={`p-4 rounded-xl border flex gap-4 transition-all cursor-pointer ${isDone ? 'bg-orange-50 border-orange-200' : 'bg-white border-slate-200 hover:border-orange-300 group'}`} onClick={() => onToggle(c.day)}>
+                           <button className={`w-7 h-7 rounded-full shrink-0 flex items-center justify-center border-2 mt-0.5 transition-all ${isDone ? 'bg-orange-500 border-orange-500 text-white shadow-sm' : 'bg-white border-slate-300 group-hover:border-orange-400 group-hover:bg-orange-50 shadow-sm'}`}>
+                             {isDone && <CheckCircle size={16} />}
+                           </button>
+                           <div>
+                             <h4 className={`font-serif font-bold text-sm mb-1 ${isDone ? 'text-orange-900' : 'text-slate-800'}`}>{c.title}</h4>
+                             <p className={`text-sm ${isDone ? 'text-orange-800' : 'text-slate-600'}`}>{c.text}</p>
+                           </div>
+                         </div>
+                       );
+                     })}
+                   </div>
+                </div>
+              ))}
+            </div>
+          );
+        }
+
+        function TeamView({ allUsers, user }) {
+          return (
+            <div className="animate-in fade-in pb-4 max-w-2xl mx-auto">
+              <h2 className="text-2xl font-serif font-bold mb-6 text-[#006838]">Progres Zespołu</h2>
+              <div className="space-y-4">
+                {allUsers.map(u => {
+                   const isMe = u.id === user.uid;
+                   const completed = u.completedDays?.length || 0;
+                   const uBadges = u.badges || [];
+                   return (
+                     <div key={u.id} className={`bg-white p-5 rounded-2xl shadow-sm border-2 transition-all hover:scale-[1.01] ${isMe ? 'border-[#008C45] bg-green-50/30' : 'border-slate-100'}`}>
+                        <div className="flex items-center gap-4 mb-4">
+                           <div className={`w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold shrink-0 shadow-inner ${isMe ? 'bg-[#008C45] text-white' : 'bg-slate-200 text-slate-600'}`}>{u.name.substring(0,2).toUpperCase()}</div>
+                           <div className="flex-1">
+                             <div className="flex justify-between items-end mb-1">
+                               <h3 className="font-bold text-lg text-slate-800">{u.name} {isMe && <span className="text-xs text-[#008C45] font-bold ml-1 uppercase tracking-wider">(Ty)</span>}</h3>
+                               <span className="text-sm font-bold text-amber-600">{completed} / 49 dni</span>
+                             </div>
+                             <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden border border-slate-200">
+                                <div className="bg-gradient-to-r from-amber-400 to-orange-500 h-full rounded-full transition-all duration-1000" style={{width: `${(completed / 49) * 100}%`}}></div>
+                             </div>
+                           </div>
+                        </div>
+                        <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 min-h-[64px] flex flex-wrap gap-2 items-center">
+                           {uBadges.length === 0 ? <span className="text-xs text-slate-400 m-auto italic font-medium">Brak zdobytych odznak</span> : 
+                             uBadges.map(bId => <div key={bId} className="w-10 h-10 rounded-full bg-white shadow-sm border border-slate-200 flex items-center justify-center text-xl hover:scale-110 transition-transform cursor-help" title={BADGES[bId]?.name}>{BADGES[bId]?.icon}</div>)
+                           }
+                        </div>
+                     </div>
+                   )
+                })}
+              </div>
+            </div>
+          );
+        }
+
+        function ChatView({ profile, allUsers, user, today }) {
+          const [messages, setMessages] = useState([]);
+          const [newMessage, setNewMessage] = useState('');
+          const chatRef = useRef(null);
+
+          const currentWeek = Math.max(1, Math.min(Math.floor(Math.max(0, today.getTime() - new Date('2026-06-08T00:00:00').getTime()) / (1000 * 60 * 60 * 24) / 7) + 1, 7));
+          const WEEKLY_QUESTIONS = { 1: "Czego najbardziej nie możesz się doczekać podczas tego wyjazdu?", 2: "Jaka jest Twoja ulubiona włoska potrawa?", 3: "Wolisz intensywne zwiedzanie, czy relaks z kawą i ładnym widokiem?", 4: "Jakie włoskie produkty spożywcze najbardziej chcesz przetestować na wyjeździe?", 5: "Jaką kulinarną pamiątkę na pewno przywieziesz do Polski?", 6: "Jakie włoskie słówko najbardziej zapadło Ci w pamięć?", 7: "O czym zazwyczaj zapominasz przy pakowaniu?" };
+
+          useEffect(() => {
+            if (!user) return;
+            const msgRef = collection(db, 'artifacts', appId, 'public', 'messages');
+            const unsubscribe = onSnapshot(msgRef, (snapshot) => {
+              const msgs = []; snapshot.forEach(doc => msgs.push({ id: doc.id, ...doc.data() }));
+              msgs.sort((a, b) => (a.timestamp?.toMillis() || Date.now()) - (b.timestamp?.toMillis() || Date.now()));
+              setMessages(msgs); setTimeout(() => { if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight; }, 100);
+            });
+            return () => unsubscribe();
+          }, [user]);
+
+          const sendMessage = async (e) => {
+            e.preventDefault(); if (!newMessage.trim() || !user || !profile) return;
+            const msgRef = collection(db, 'artifacts', appId, 'public', 'messages');
+            await addDoc(msgRef, { text: newMessage.trim(), authorId: user.uid, authorName: profile.name, timestamp: serverTimestamp() });
+            setNewMessage('');
+          };
+
+          return (
+            <div className="animate-in fade-in flex flex-col h-[calc(100vh-160px)] sm:h-auto max-w-2xl mx-auto">
+              <h2 className="text-2xl font-serif font-bold mb-4 text-[#006838]">Czat Zespołu</h2>
+              <div className="flex-1 bg-white border border-slate-200 rounded-2xl flex flex-col overflow-hidden min-h-[350px] shadow-sm">
+                <div className="bg-amber-50 p-3 sm:p-4 border-b border-amber-200 flex gap-3 items-start shrink-0">
+                  <div className="bg-amber-500 text-white p-2 rounded-full shrink-0 shadow-sm"><MessageCircle size={16} /></div>
+                  <div>
+                    <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wider font-sans">Pytanie Tygodnia {currentWeek}</span>
+                    <p className="text-sm font-bold text-amber-900 mt-0.5 font-serif">{WEEKLY_QUESTIONS[currentWeek]}</p>
+                  </div>
+                </div>
+                <div ref={chatRef} className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#FDF9F1]">
+                  {messages.length === 0 ? <div className="text-center text-slate-400 mt-10 text-sm bg-white p-4 rounded-xl border border-slate-100 inline-block mx-auto">Napisz jako pierwszy!</div> : 
+                    messages.map(msg => (
+                      <div key={msg.id} className={`flex flex-col ${msg.authorId === user.uid ? 'items-end' : 'items-start'}`}>
+                        <span className="text-[10px] text-slate-400 font-bold mb-1 px-1">{msg.authorId === user.uid ? 'Ty' : msg.authorName}</span>
+                        <div className={`max-w-[85%] p-3 rounded-2xl text-sm shadow-sm ${msg.authorId === user.uid ? 'bg-[#008C45] text-white rounded-tr-none' : 'bg-white border border-slate-200 text-slate-800 rounded-tl-none'}`}>{msg.text}</div>
+                      </div>
+                    ))
+                  }
+                </div>
+                <form onSubmit={sendMessage} className="p-3 bg-white border-t border-slate-200 flex gap-2 shrink-0">
+                  <input type="text" value={newMessage} onChange={e => setNewMessage(e.target.value)} placeholder="Napisz wiadomość..." className="flex-1 bg-slate-50 border border-slate-200 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-[#CD212A]" />
+                  <button type="submit" disabled={!newMessage.trim()} className="bg-[#CD212A] text-white rounded-full px-5 py-2 font-bold text-sm disabled:opacity-50 hover:bg-red-700">Wyślij</button>
+                </form>
+              </div>
+            </div>
+          );
+        }
+
+        function EmptyState({ icon, msg }) {
+          return <div className="flex flex-col items-center justify-center py-20 text-slate-400 bg-white rounded-3xl border border-slate-100 shadow-sm mt-4"><div className="mb-4 opacity-50">{icon}</div><p className="font-semibold text-center px-6">{msg}</p></div>;
+        }
+
+        const root = createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
