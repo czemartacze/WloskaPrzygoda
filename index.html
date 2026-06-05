@@ -54,11 +54,11 @@
 
         // KROK 2: TUTAJ ZMIEŃ IMIONA I HASŁA SWOJEGO ZESPOŁU
         const USERS_CREDENTIALS = {
-          "Marta": "wlochy123",
-          "Jacek": "wlochy234",
-          "Paweł": "wlochy345",
-          "Oskar": "wlochy456",
-          "Szymon": "wlochy567"
+          "Marta": "wlochy135",
+          "Jacek": "wlochy246",
+          "Paweł": "wlochy357",
+          "Oskar": "wlochy468",
+          "Szymon": "wlochy579"
         };
 
         const BADGES = {
@@ -95,7 +95,7 @@
           8: { type: 'daily', title: "Kawa w Bergamo", location: "Gastronomia", trivia: "'Caffè' to we Włoszech domyślnie małe espresso. Pije się je przy barze, na stojąco (jest wtedy tańsze!). Cappuccino? Włosi piją je tylko rano, maksymalnie do 11:00.", challenge: "Dzisiejszą kawę lub herbatę wypij powoli, nie patrząc w ekran komputera ani telefonu.", words: [{ it: "Vorrei un caffè macchiato.", pl: "Chciałbym espresso z odrobiną mleka." }, { it: "Prendo un caffè da asporto.", pl: "Wezmę kawę na wynos." }, { it: "Un espresso, per favore.", pl: "Poproszę espresso." }, { it: "Senza zucchero", pl: "Bez cukru" }], quiz: { question: "Zamawiasz kawę o 16:00 po sytym obiedzie. Czego NIE powinieneś zamawiać?", options: ["Un caffè", "Un cappuccino", "Un espresso"], answer: 1 } },
           9: { type: 'daily', title: "Włoska Restauracja", location: "Gastronomia", trivia: "W restauracjach spotkasz się z doliczanym do rachunku tzw. 'coperto' (nakrycie stołu, zwykle 2-3 euro za osobę). Zastępuje to obowiązkowy napiwek.", challenge: "Wyzwanie: Znajdź w sieci przepis na prawdziwą Spaghetti Carbonara (podpowiedź: zero śmietany!).", words: [{ it: "Possiamo avere il menù?", pl: "Czy możemy prosić o menu?" }, { it: "Il conto, per favore.", pl: "Poproszę rachunek." }, { it: "È tutto delizioso!", pl: "Wszystko jest pyszne!" }, { it: "Il tavolo per due.", pl: "Stolik dla dwojga." }], quiz: { question: "Jak poprosisz kelnera o rachunek?", options: ["Il menù, per favore", "Il conto, per favore", "È delizioso"], answer: 1 } },
           10: { type: 'daily', title: "Prawdziwa Pizza i Gelato", location: "Gastronomia", trivia: "Pizza Margherita (z 1889 r.) to hołd dla królowej Małgorzaty Sabaudzkiej. Jej składniki symbolizują flagę Włoch: czerwone pomidory, biała mozzarella, zielona bazylia.", challenge: "Napisz na czacie zespołu: jaka jest Twoja absolutnie ulubiona pizza?", words: [{ it: "Vorrei una pizza Margherita.", pl: "Poproszę pizzę Margheritę." }, { it: "Per me una birra piccola.", pl: "Dla mnie małe piwo." }, { it: "Il bicchiere o il cono?", pl: "Kubeczek czy rożek?" }, { it: "Vorrei un gelato al pistacchio.", pl: "Poproszę lody pistacjowe." }, { it: "Due palline, per favore.", pl: "Dwie gałki, poproszę." }], quiz: { question: "Jak poprosisz o rożek na lody?", options: ["Il bicchiere", "Il cono", "Palline"], answer: 1 } },
-          11: { type: 'video', title: "Tajemnica Gelato", location: "Wideo", trivia: "Prawdziwe rzemieślnicze 'Gelato' to nie to samo co zwykłe lody! Włosi są z nich niesamowicie dumni, a sekretem jest proces ubijania.", videoId: "7C-Qn3vIeZk", question: "Dlaczego włoskie Gelato ma o wiele intensywniejszy smak niż inne lody?", options: ["Jest zamrażane w niższej temperaturze", "Zawiera o wiele mniej wtłoczonego powietrza i tłuszczu", "Dodaje się do niego więcej cukru"], answer: 1 },
+          11: { type: 'video', title: "Tajemnica Gelato", location: "Wideo", trivia: "Prawdziwe rzemieślnicze 'Gelato' to nie to samo co zwykłe lody! Włosi są z nich niesamowicie dumni, a sekretem jest proces ubijania.", videoId: "yGTQfpx0Bkk", question: "Dlaczego włoskie Gelato ma o wiele intensywniejszy smak niż inne lody?", options: ["Jest zamrażane w niższej temperaturze", "Zawiera o wiele mniej wtłoczonego powietrza i tłuszczu", "Dodaje się do niego więcej cukru"], answer: 1 },
           
           12: { type: 'minigame_scramble', title: "Rozgrzewka: Konstruktor", location: "Podsumowanie", trivia: "Połącz słowa w odpowiedniej kolejności, aby zbudować poprawne zdanie przydatne przy barze!", sentence: "Vorrei un caffè per favore", translation: "Poproszę kawę (Chciałbym kawę, proszę)", words: ["caffè", "Vorrei", "per", "favore", "un"] },
           13: { type: 'simulation', title: "Symulacja: Włoska Kawiarnia", location: "Praktyka", trivia: "Czas na zamówienie! Włosi cenią szybką i konkretną wymianę zdań przy barze.", scenario: { start: { bot: "Buongiorno! Cosa prende? (Dzień dobry! Co podać?)", options: [ { text: "Vorrei una pizza Margherita.", next: 'pizza' }, { text: "Un caffè espresso, per favore.", next: 'kawa' } ] }, pizza: { bot: "Signora, questo è un bar, non una pizzeria! (Proszę Pani, to jest bar, nie pizzeria!)", end: true }, kawa: { bot: "Ottimo. Da bere un po' d'acqua? (Świetnie. Trochę wody do picia?)", options: [ { text: "Sì, grazie. E il conto, per favore. (Tak, dziękuję. I poproszę rachunek.)", next: 'koniec' } ] }, koniec: { bot: "Subito! Ecco a Lei. (Już się robi! Proszę bardzo.) 🎉", end: true } } },
@@ -103,7 +103,7 @@
 
           15: { type: 'daily', title: "Labirynty Wenecji", location: "Wenecja", trivia: "Wenecja zbudowana jest na 118 wyspach. Nie ma tam w ogóle samochodów! Zamiast autobusów są 'Vaporetto' (tramwaje wodne), a zamiast taksówek - łodzie motorowe.", challenge: "Otwórz Google Street View na Placu św. Marka (Piazza San Marco) i wirtualnie 'przespaceruj się' przez 2 minuty.", words: [{ it: "Scusi, dov'è il bagno?", pl: "Przepraszam, gdzie jest toaleta?" }, { it: "Dove posso trovare un taxi?", pl: "Gdzie znajdę taksówkę?" }, { it: "Come arrivo a San Marco?", pl: "Jak dotrę do San Marco?" }], quiz: { question: "W kryzysowej sytuacji musisz spytać o toaletę. Jak to zrobisz?", options: ["Dov'è il bagno?", "Dov'è il ristorante?", "A destra?"], answer: 0 } },
           16: { type: 'daily', title: "Prawo czy lewo?", location: "Transport", trivia: "We włoskich miastach bardzo często spotkasz strefy ZTL (Zona a Traffico Limitato). Wjazd do centrum bez przepustki to gwarantowany, wysoki mandat z ukrytej kamery!", challenge: "Nawiguj dziś po swoim biurze lub domu, powtarzając w myślach: 'a destra', 'a sinistra'.", words: [{ it: "Vada dritto e poi a destra.", pl: "Proszę iść prosto, a potem w prawo." }, { it: "A sinistra", pl: "W lewo" }, { it: "È lontano da qui?", pl: "Czy to daleko stąd?" }, { it: "No, è molto vicino.", pl: "Nie, to bardzo blisko." }], quiz: { question: "Hotel jest 'a sinistra'. W którą stronę idziesz?", options: ["W prawo", "Prosto", "W lewo"], answer: 2 } },
-          17: { type: 'video', title: "Relaks w Wenecji", location: "Wideo", trivia: "Dziś czas na odpoczynek dla oczu i uszu. Zapraszamy na krótki wirtualny rejs weneckimi kanałami!", videoId: "91oX-fM_WNE", question: "Czego całkowicie BRAKUJE na ulicach Wenecji (co widać na filmach)?", options: ["Pieszych", "Samochodów", "Mostów"], answer: 1 },
+          17: { type: 'video', title: "Relaks w Wenecji", location: "Wideo", trivia: "Dziś czas na odpoczynek dla oczu i uszu. Zapraszamy na krótki wirtualny rejs weneckimi kanałami!", videoId: "U-MiRD2RMWg", question: "Czego całkowicie BRAKUJE na ulicach Wenecji (co widać na filmach)?", options: ["Pieszych", "Samochodów", "Mostów"], answer: 1 },
           18: { type: 'daily', title: "Pociągi i Bilety", location: "Podróże", trivia: "Uwaga na włoskie pociągi regionalne! Tradycyjny, papierowy bilet przed wejściem do pociągu TRZEBA skasować w małej, często zielonej maszynce na peronie.", challenge: "Wpisz w Google 'Frecciarossa' i sprawdź, jak wyglądają włoskie pociągi dużej prędkości.", words: [{ it: "Un biglietto per Verona, per favore.", pl: "Poproszę bilet do Werony." }, { it: "Da quale binario parte il treno?", pl: "Z którego peronu odjeżdża pociąg?" }, { it: "Il treno è in ritardo.", pl: "Pociąg jest opóźniony." }], quiz: { question: "Co koniecznie musisz kupić i skasować przed jazdą pociągiem regionalnym?", options: ["Il bagno", "Il biglietto", "Il binario"], answer: 1 } },
           
           19: { type: 'minigame_match', title: "Orientacja w Terenie", location: "Podsumowanie", trivia: "Połącz w pary kierunki i miejsca w mieście, które poznałeś w tym tygodniu.", pairs: [{it: "A destra", pl: "W prawo"}, {it: "A sinistra", pl: "W lewo"}, {it: "Dritto", pl: "Prosto"}, {it: "Il bagno", pl: "Toaleta"}, {it: "Il biglietto", pl: "Bilet"}, {it: "Il treno", pl: "Pociąg"}] },
@@ -121,7 +121,7 @@
 
           29: { type: 'daily', title: "Dział Fresco", location: "Asortyment", trivia: "Ważne: na dziale owoców w supermarkecie MUSISZ założyć jednorazowe, foliowe rękawiczki przed dotknięciem owoców lub warzyw! Dotykanie ich gołą ręką to ogromne faux pas.", challenge: "Zastanów się - co kupisz sobie we Włoszech jako przekąskę?", words: [{ it: "Dove si trova il reparto frutta?", pl: "Gdzie jest dział z owocami?" }, { it: "Questo prodotto è fresco.", pl: "Ten produkt jest świeży." }, { it: "I guanti di plastica", pl: "Plastikowe rękawiczki" }], quiz: { question: "Jabłka, pomarańcze i winogrona znajdziesz na dziale:", options: ["Reparto frutta (dział owoców)", "La cassa (kasa)"], answer: 0 } },
           30: { type: 'daily', title: "Sery i Wędliny", location: "Lombardia", trivia: "Lombardia to ojczyzna serów takich jak pyszna Gorgonzola i kremowe Mascarpone. Włosi kochają kupować na wagę: 'un etto' to dokładnie 100 gramów.", challenge: "Podzielcie się na czacie swoim ulubionym włoskim serem lub wędliną (np. parmezan, mozzarella, prosciutto).", words: [{ it: "Mi piace molto il formaggio locale.", pl: "Bardzo lubię lokalny ser." }, { it: "Vorrei assaggiare questo formaggio.", pl: "Chciałbym spróbować tego sera." }, { it: "Vorrei due etti di prosciutto.", pl: "Poproszę 200g szynki (2 etti)." }, { it: "Quali salumi mi consiglia?", pl: "Jakie wędliny mi Pan/Pani poleca?" }], quiz: { question: "Ile to jest 'un etto' na stoisku wędliniarskim?", options: ["Jeden kilogram", "100 gramów", "Jeden plasterek"], answer: 1 } },
-          31: { type: 'video', title: "Włoski Supermarket", location: "Wideo", trivia: "Krótka wycieczka po typowym, włoskim supermarkecie. Zobacz jak bogate i kolorowe potrafią być tamtejsze asortymenty 'fresco'!", videoId: "tP6I07e8S1s", question: "Co najbardziej rzuca się w oczy na typowych stoiskach z serami we Włoszech (co potwierdza też wideo)?", options: ["Wszystko pakowane jest w fabryczny plastik", "Ogromny wybór świeżo krojonych, całych bloków lokalnych serów"], answer: 1 },
+          31: { type: 'video', title: "Włoski Supermarket", location: "Wideo", trivia: "Krótka wycieczka po typowym, włoskim supermarkecie. Zobacz jak bogate i kolorowe potrafią być tamtejsze asortymenty 'fresco'!", videoId: "ceow-XRzGUE", question: "Co najbardziej rzuca się w oczy na typowych stoiskach z serami we Włoszech (co potwierdza też wideo)?", options: ["Wszystko pakowane jest w fabryczny plastik", "Ogromny wybór świeżo krojonych, całych bloków lokalnych serów"], answer: 1 },
           32: { type: 'daily', title: "Słodycze Północy", location: "Desery", trivia: "Werona to nie tylko Romeo i Julia, ale też ojczyzna 'Pandoro' - słodkiej, maślanej babki w kształcie ośmioramiennej gwiazdy, jedzonej tradycyjnie w okresie świąt.", challenge: "Zjedz dziś coś słodkiego i popraw sobie humor!", words: [{ it: "Avete dei dolci tipici?", pl: "Czy macie jakieś lokalne, typowe słodycze?" }, { it: "Adoro il cioccolato fondente.", pl: "Uwielbiam gorzką czekoladę." }, { it: "I biscotti", pl: "Ciasteczka" }], quiz: { question: "Gorzka czekolada to po włosku:", options: ["Dolci", "Cioccolato fondente", "Biscotti"], answer: 1 } },
           
           33: { type: 'minigame_match', title: "Rozgrzewka Smakosza", location: "Podsumowanie", trivia: "Złącz włoskie i polskie produkty spożywcze w pyszne pary.", pairs: [{it: "Il formaggio", pl: "Ser"}, {it: "I salumi", pl: "Wędliny"}, {it: "I dolci", pl: "Słodycze"}, {it: "Fresco", pl: "Świeży"}, {it: "Un etto", pl: "100 gramów"}] },
@@ -130,7 +130,7 @@
 
           36: { type: 'daily', title: "Jezioro Garda", location: "Natura", trivia: "Garda to największe i najczystsze jezioro we Włoszech. Jego północna część otoczona jest spektakularnymi górami, a południowa słynie z pięknych gajów oliwnych i winnic.", challenge: "Wpisz w mapy Google zamek 'Castello di Sirmione' i zobacz jak jest położony na wodzie.", words: [{ it: "Che bella vista!", pl: "Ale piękny widok!" }, { it: "Il lago è fantastico.", pl: "Jezioro jest fantastyczne." }, { it: "Che bel posto!", pl: "Jakie piękne miejsce!" }], quiz: { question: "Widzisz zachwycający widok nad jeziorem. Powiesz:", options: ["Che bella vista!", "È chiuso", "Scusa"], answer: 0 } },
           37: { type: 'daily', title: "Sjesta i upał", location: "Pogoda", trivia: "W czasie największych upałów Włosi zamykają mniejsze sklepy na tzw. riposo (sjestę) między 13:00 a 16:00. Pamiętaj o regularnym piciu wody!", challenge: "Wolisz upał czy zimno? Napisz na czacie zespołu co o tym sądzisz.", words: [{ it: "Oggi fa molto caldo.", pl: "Dzisiaj jest bardzo gorąco." }, { it: "Vorrei una bottiglia d'acqua, per favore.", pl: "Poproszę butelkę wody." }, { it: "Acqua frizzante o naturale?", pl: "Woda gazowana czy niegazowana?" }], quiz: { question: "Jak poprosisz o małą butelkę wody?", options: ["Una bottiglia d'acqua", "Un caffè", "Un biglietto"], answer: 0 } },
-          38: { type: 'video', title: "Lot nad Jeziorem", location: "Wideo", trivia: "Jezioro Garda to raj dla żeglarzy i surferów ze względu na specyficzne wiatry. Zobaczmy piękno tego miejsca z lotu ptaka!", videoId: "3b0h2-Xp5e0", question: "Co charakteryzuje Jezioro Garda na nagraniach z drona?", options: ["Krystaliczna woda wkomponowana między strome góry", "Krajobraz pełen wielkich fabryk i kominów"], answer: 0 },
+          38: { type: 'video', title: "Lot nad Jeziorem", location: "Wideo", trivia: "Jezioro Garda to raj dla żeglarzy i surferów ze względu na specyficzne wiatry. Zobaczmy piękno tego miejsca z lotu ptaka!", videoId: "Cg7WniFOxF0", question: "Co charakteryzuje Jezioro Garda na nagraniach z drona?", options: ["Krystaliczna woda wkomponowana między strome góry", "Krajobraz pełen wielkich fabryk i kominów"], answer: 0 },
           39: { type: 'daily', title: "Dolce far niente", location: "Lifestyle", trivia: "'Dolce far niente' to słynne słodkie nicnierobienie. Włosi nie uważają tego za lenistwo, lecz za sztukę cieszenia się daną chwilą (odpoczynku, zachodu słońca).", challenge: "Znajdź dziś 15 minut na kompletny relaks - bez telefonu, bez sprawdzania maili.", words: [{ it: "Facciamo una passeggiata?", pl: "Zrobimy sobie spacer?" }, { it: "Stai tranquillo, c'è tempo.", pl: "Spokojnie, mamy czas." }, { it: "Quanto costa un giro in barca?", pl: "Ile kosztuje rejs łodzią?" }, { it: "A che ora parte il traghetto?", pl: "O której odpływa prom?" }], quiz: { question: "Jak zaproponujesz komuś wspólny spacer nad jeziorem?", options: ["Facciamo una passeggiata?", "Stai tranquillo!", "Quanto costa?"], answer: 0 } },
           
           40: { type: 'minigame_scramble', title: "Rozgrzewka Wakacyjna", location: "Podsumowanie", trivia: "Złóż przydatne zdanie potrzebne podczas odpoczynku w gorącym klimacie.", sentence: "Vorrei una bottiglia d'acqua", translation: "Poproszę butelkę wody", words: ["d'acqua", "una", "Vorrei", "bottiglia"] },
@@ -323,7 +323,6 @@
                      >
                         {timeTravel ? 'Test: Odblokowane' : 'Test: Zegar'}
                      </button>
-                     
                      <button onClick={() => setShowProfileModal(true)} className="flex items-center justify-center w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full border border-white/30 transition-all active:scale-95 shadow-inner relative group">
                         <User size={20} className="text-white" />
                         {(profile?.badges?.length || 0) > 0 && (
@@ -510,7 +509,7 @@
                 </div>
                 <div>
                   <h2 className="text-xl sm:text-2xl font-serif font-bold mb-1 text-[#006838]">Plan Podróży</h2>
-                  <p className="text-sm text-slate-600">Przygotuj się na Włochy! Dni szare rozwiązuj codziennie, piątki to językowy trening, a weekendy (na niebiesko) to czysty relaks.</p>
+                  <p className="text-sm text-slate-600">Przygotujmy się wspólnie na wyjazd do Włoch, rozwiązując codzienne zadania, poznając przydatne słówka i ciekawostki!</p>
                 </div>
               </div>
 
@@ -526,7 +525,8 @@
                       const isCompleted = profile?.completedDays?.includes(dayNum);
                       const data = appData[dayNum];
                       
-                      const isWeekend = data?.type === 'weekend' || data?.type === 'simulation';
+                      const isWknd = data?.type === 'weekend';
+                      const isSim = data?.type === 'simulation';
                       const isGame = data?.type.includes('minigame');
                       const isVideo = data?.type === 'video';
 
@@ -534,7 +534,7 @@
                       
                       if (!unlocked) { btnClass += "bg-slate-50 border-slate-100 text-slate-300 cursor-not-allowed"; } 
                       else if (isCompleted) { btnClass += "bg-green-50 border-[#008C45] text-[#006838] hover:bg-green-100 cursor-pointer"; } 
-                      else if (isWeekend) { btnClass += "bg-blue-50 border-blue-200 text-blue-800 hover:bg-blue-100 hover:-translate-y-1 cursor-pointer"; } 
+                      else if (isWknd || isSim) { btnClass += "bg-blue-50 border-blue-200 text-blue-800 hover:bg-blue-100 hover:-translate-y-1 cursor-pointer"; } 
                       else if (isGame) { btnClass += "bg-amber-50 border-amber-300 text-amber-800 hover:bg-amber-100 hover:-translate-y-1 cursor-pointer"; } 
                       else if (isVideo) { btnClass += "bg-purple-50 border-purple-300 text-purple-800 hover:bg-purple-100 hover:-translate-y-1 cursor-pointer"; } 
                       else { btnClass += "bg-white border-orange-200 text-slate-700 hover:border-orange-400 hover:-translate-y-1 cursor-pointer"; }
@@ -546,12 +546,13 @@
                             <div className="h-4 flex items-center justify-center w-full">
                               {!unlocked && <Lock className="w-3 h-3 text-slate-300" />}
                               {unlocked && isGame && !isCompleted && <Award className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-500" />}
-                              {unlocked && isWeekend && !isCompleted && <Coffee className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-400" />}
+                              {unlocked && isWknd && !isCompleted && <Coffee className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-400" />}
+                              {unlocked && isSim && !isCompleted && <MessageCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-500" />}
                               {unlocked && isVideo && !isCompleted && <Video className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-purple-500" />}
                               {isCompleted && <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#008C45]" />}
                             </div>
 
-                            <span className={`text-[8px] sm:text-[10px] font-sans pb-0.5 tracking-tight ${unlocked && !isCompleted && isWeekend ? 'text-blue-500 font-bold' : 'text-slate-400 opacity-70'}`}>
+                            <span className={`text-[8px] sm:text-[10px] font-sans pb-0.5 tracking-tight ${unlocked && !isCompleted && (isWknd || isSim) ? 'text-blue-500 font-bold' : 'text-slate-400 opacity-70'}`}>
                               {formatDate(dateObj)}
                             </span>
                           </button>
@@ -600,7 +601,8 @@
           let Icon = MapPin;
           
           if (isGame) { theme = 'bg-gradient-to-br from-amber-500 to-orange-600'; Icon = Award; }
-          else if (isSim || isWknd) { theme = 'bg-gradient-to-br from-blue-500 to-cyan-600'; Icon = Coffee; }
+          else if (isSim) { theme = 'bg-gradient-to-br from-blue-500 to-cyan-600'; Icon = MessageCircle; }
+          else if (isWknd) { theme = 'bg-gradient-to-br from-blue-500 to-cyan-600'; Icon = Coffee; }
           else if (isVid) { theme = 'bg-gradient-to-br from-purple-500 to-indigo-600'; Icon = Video; }
 
           return (
@@ -886,6 +888,9 @@
                    allowFullScreen
                  ></iframe>
               </div>
+              <a href={`https://www.youtube.com/watch?v=${data.videoId}`} target="_blank" rel="noopener noreferrer" className="block text-center text-sm font-bold text-purple-700 hover:text-purple-900 bg-purple-100 py-3 rounded-xl transition-colors">
+                 Twórca zablokował wideo? Kliknij tutaj, by obejrzeć je bezpośrednio na YouTube! ↗️
+              </a>
               <div className="border-t border-slate-200 pt-6">
                  <SingleQuiz quizData={{question: data.question, options: data.options, answer: data.answer}} onFinish={() => setQuizFinished(true)} />
               </div>
