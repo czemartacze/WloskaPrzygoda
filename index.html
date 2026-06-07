@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>La Dolce Vita - Włoska Przygoda</title>
+    <title>Włoska Wyprawa!</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -28,16 +28,16 @@
         .pb-safe { padding-bottom: calc(1rem + env(safe-area-inset-bottom)); }
     </style>
 </head>
-<body class="bg-[#FDF9F1] overflow-x-hidden">
+<body class="bg-[#F4F9FF] overflow-x-hidden text-slate-800">
     <div id="root"></div>
 
     <script type="text/babel" data-type="module">
         import React, { useState, useEffect, useRef } from 'react';
         import { createRoot } from 'react-dom/client';
-        import { Play, Volume2, ArrowLeft, CheckCircle, MapPin, Coffee, Music, Award, Star, Lock, CalendarDays, BookOpen, BrainCircuit, MessageSquare, CheckSquare, Target, Search, Plane, Medal, User, Users, Video, MessageCircle } from 'lucide-react';
+        import { Play, Volume2, ArrowLeft, CheckCircle, MapPin, Coffee, Music, Award, Star, Lock, CalendarDays, BookOpen, BrainCircuit, MessageSquare, CheckSquare, Target, Search, Plane, Medal, User, Users, Video, MessageCircle, X, Send } from 'lucide-react';
         import { initializeApp } from 'firebase/app';
         import { getAuth, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
-        import { getFirestore, doc, setDoc, onSnapshot, collection, addDoc, serverTimestamp } from 'firebase/firestore';
+        import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection, addDoc, serverTimestamp, query, orderBy } from 'firebase/firestore';
 
         const firebaseConfig = {
           apiKey: "AIzaSyAbeJzL9aPpncfrlYgoHMxEzkkUa0K72WE",
@@ -81,7 +81,7 @@
         };
 
         const appData = {
-          1: { type: 'daily', title: "Benvenuti al Nord!", location: "Mediolan", trivia: "Północne Włochy to gospodarcze serce kraju. Sama Lombardia generuje ponad 22% całego PKB Włoch! Siła nabywcza konsumentów jest tu o ok. 30% wyższa niż na południu, co czyni ten region kluczowym dla rynku FMCG i sieci detalicznych.", challenge: "Wrzuć na nasz czat utwór, który według Ciebie najlepiej oddaje włoski klimat. Tworzymy wspólną playlistę na wyjazd!", words: [{ it: "Buongiorno", pl: "Dzień dobry" }, { it: "Piacere di conoscerti.", pl: "Miło mi cię poznać." }, { it: "Tutto bene!", pl: "Wszystko w porządku!" }, { it: "Ciao", pl: "Cześć" }, { it: "Prego", pl: "Proszę (bardzo)" }, { it: "Sì, certo", pl: "Tak, oczywiście" }], quiz: { question: "Ktoś mówi do Ciebie 'Grazie'. Co odpowiadasz?", options: ["Ciao", "Prego", "Buongiorno"], answer: 1 } },
+        1: { type: 'daily', title: "Benvenuti al Nord!", location: "Mediolan", trivia: "Północne Włochy to gospodarcze serce kraju. Sama Lombardia generuje ponad 22% całego PKB Włoch! Siła nabywcza konsumentów jest tu o ok. 30% wyższa niż na południu, co czyni ten region kluczowym dla rynku FMCG i sieci detalicznych.", challenge: "Wrzuć na nasz czat utwór, który według Ciebie najlepiej oddaje włoski klimat. Tworzymy wspólną playlistę na wyjazd!", words: [{ it: "Buongiorno", pl: "Dzień dobry" }, { it: "Piacere di conoscerti.", pl: "Miło mi cię poznać." }, { it: "Tutto bene!", pl: "Wszystko w porządku!" }, { it: "Ciao", pl: "Cześć" }, { it: "Prego", pl: "Proszę (bardzo)" }, { it: "Sì, certo", pl: "Tak, oczywiście" }], quiz: { question: "Ktoś mówi do Ciebie 'Grazie'. Co odpowiadasz?", options: ["Ciao", "Prego", "Buongiorno"], answer: 1 } },
           2: { type: 'daily', title: "Magiczne słowa", location: "Kultura", trivia: "Włosi używają ok. 250 gestów dłoni! W negocjacjach biznesowych (tzw. high-context culture) mowa ciała przekazuje często więcej intencji niż słowa. Zaciśnięta dłoń i potrząsanie palcami to klasyk oznaczający 'O co ci chodzi?'.", challenge: "Wykorzystaj dziś słowo 'Grazie', dziękując komuś z zespołu za drobną pomoc zawodową. Oswajamy się ze słownictwem.", words: [{ it: "Per favore", pl: "Proszę (prosząc o coś)" }, { it: "Scusa, hai un minuto?", pl: "Przepraszam, masz minutę?" }, { it: "Può aiutarmi, per favore?", pl: "Czy może mi Pan/Pani pomóc?" }, { it: "No, grazie", pl: "Nie, dziękuję" }, { it: "Grazie mille!", pl: "Bardzo dziękuję!" }], quiz: { question: "Chcesz zapytać kogoś na ulicy o drogę. Jak zaczniesz?", options: ["No", "Scusa", "Grazie"], answer: 1 } },
           3: { type: 'daily', title: "Bariera językowa", location: "Komunikacja", trivia: "Na północy dogadasz się po angielsku, choć ogólnokrajowy wskaźnik biegłości (EPI) Włoch jest jednym z niższych w UE. Dlatego w kontaktach B2B i B2C każda włoska wstawka przełamuje lody i buduje kluczowe tutaj 'relazioni'.", challenge: "Poleć na naszym czacie jakiś włoski film lub serial!", words: [{ it: "Non capisco", pl: "Nie rozumiem" }, { it: "Parla inglese?", pl: "Mówi pan/pani po angielsku?" }, { it: "Può ripetere, per favore?", pl: "Czy może Pan/Pani powtórzyć?" }, { it: "Come sta?", pl: "Jak się Pan/Pani miewa?" }, { it: "Sto bene, grazie.", pl: "Mam się dobrze, dziękuję." }], quiz: { question: "Jak powiesz, że nie rozumiesz?", options: ["Non capisco", "Come sta", "Bene"], answer: 0 } },
           4: { type: 'daily', title: "Pożegnania i Baci", location: "Kultura", trivia: "Baci (buziaki) w policzek na pożegnanie to standard, nawet w relacjach B2B po przypieczętowaniu umowy. Włosi cenią relacje osobiste bardziej niż sztywne procedury korporacyjne. Całujemy najpierw w LEWY, a potem w PRAWY policzek!", challenge: "Zakończ dzisiejsze spotkanie online lub wyjdź z biura rzucając głośne i pewne siebie 'Arrivederci!'.", words: [{ it: "Arrivederci", pl: "Do widzenia" }, { it: "A presto", pl: "Do zobaczenia wkrótce" }, { it: "Ci vediamo domani!", pl: "Widzimy się jutro!" }, { it: "Buonasera", pl: "Dobry wieczór" }, { it: "Buona giornata", pl: "Miłego dnia" }], quiz: { question: "Wychodzisz o godzinie 14:00. Co najlepiej powiedzieć na pożegnanie?", options: ["Buonasera", "Buona giornata (Miłego dnia)", "A presto"], answer: 1 } },
@@ -122,7 +122,7 @@
           31: { type: 'video', title: "Włoski Supermarket", location: "Wideo", trivia: "Zauważ format na wideo! Włochy to wciąż rynek zdominowany przez lokalne sieci i rozdrobniony handel. Format hipermarketów notuje tu spadki, a lwią część rynku zagarniają nowoczesne dyskonty i lokalne sklepy typu proximity (blisko domu).", videoId: "ceow-XRzGUE", question: "Co najbardziej rzuca się w oczy na typowych stoiskach z serami we Włoszech (co potwierdza też wideo)?", options: ["Wszystko pakowane jest w fabryczny plastik", "Ogromny wybór świeżo krojonych, całych bloków lokalnych serów"], answer: 1 },
           32: { type: 'daily', title: "Słodycze Północy", location: "Desery", trivia: "Werona to ojczyzna 'Pandoro'. Kategoria sezonowych ciast (Panettone i Pandoro) generuje we Włoszech sprzedaż rzędu setek milionów euro w zaledwie kilka tygodni grudnia, będąc najważniejszą w roku bitwą o marżę dla producentów FMCG i sieci handlowych.", challenge: "Zrób mały research: jaki włoski deser, oprócz klasycznego Tiramisu, bezwzględnie musimy przetestować na miejscu?", words: [{ it: "Avete dei dolci tipici?", pl: "Czy macie jakieś lokalne, typowe słodycze?" }, { it: "Adoro il cioccolato fondente.", pl: "Uwielbiam gorzką czekoladę." }, { it: "I biscotti", pl: "Ciasteczka" }], quiz: { question: "Gorzka czekolada to po włosku:", options: ["Dolci", "Cioccolato fondente", "Biscotti"], answer: 1 } },
           
-          33: { type: 'minigame_match', title: "Rozgrzewka Smakosza", location: "Podsumowanie", triv/ia: "Złącz włoskie i polskie produkty spożywcze w pyszne pary.", pairs: [{it: "Il formaggio", pl: "Ser"}, {it: "I salumi", pl: "Wędliny"}, {it: "I dolci", pl: "Słodycze"}, {it: "Fresco", pl: "Świeży"}, {it: "Un etto", pl: "100 gramów"}] },
+          33: { type: 'minigame_match', title: "Rozgrzewka Smakosza", location: "Podsumowanie", trivia: "Złącz włoskie i polskie produkty spożywcze w pyszne pary.", pairs: [{it: "Il formaggio", pl: "Ser"}, {it: "I salumi", pl: "Wędliny"}, {it: "I dolci", pl: "Słodycze"}, {it: "Fresco", pl: "Świeży"}, {it: "Un etto", pl: "100 gramów"}] },
           34: { type: 'simulation', title: "Symulacja: Dział Fresco", location: "Praktyka", trivia: "Zapach serów i wędlin wisi w powietrzu. Sprzedawca zza lady pyta, w czym Ci pomóc.", scenario: { start: { bot: "Prego! Dica. (Słucham! Proszę mówić.)", options: [ { text: "Vorrei due etti di prosciutto, per favore. (Poproszę 200g szynki.)", next: 'szynka' }, { text: "Un caffè macchiato.", next: 'kawa' } ] }, kawa: { bot: "Deve andare al bar per il caffè! (Po kawę musi Pan/Pani iść do baru!)", end: true }, szynka: { bot: "Ecco a Lei. Altro? (Proszę bardzo. Coś jeszcze?)", options: [ { text: "Sì, vorrei assaggiare questo formaggio. (Tak, chciałbym/chciałabym spróbować tego sera.)", next: 'koniec' } ] }, koniec: { bot: "Certo, è delizioso! (Oczywiście, è pyszny!) 🎉", end: true } } },
           35: { type: 'weekend', title: "Dolina Motoryzacji", location: "Ciekawostka", trivia: "Północne Włochy to 'Motor Valley' (Ferrari, Lamborghini). Region ten cechuje się innowacyjnością i jednym z najwyższych wskaźników eksportu w UE, napędzając bogactwo konsumentów, co przekłada się na wyższą skłonność do zakupu dóbr premium FMCG." },
 
@@ -142,7 +142,8 @@
           
           47: { type: 'minigame_match', title: "Egzamin Ostateczny", location: "Koniec", trivia: "Twoje ostatnie parowanie słówek w aplikacji! Lotniskowy misz-masz.", pairs: [{it: "La valigia", pl: "Walizka"}, {it: "L'aeroporto", pl: "Lotnisko"}, {it: "Il volo", pl: "Lot"}, {it: "La squadra", pl: "Zespół"}, {it: "Buon viaggio", pl: "Dobrej podróży"}, {it: "Pronti", pl: "Gotowi"}] },
           48: { type: 'simulation', title: "Symulacja: Ostatnia Prosta", location: "Praktyka", trivia: "Hala odlotów. Za moment wsiadacie do samolotu. Ostatnia krótka rozmowa z obsługą przy bramce.", scenario: { start: { bot: "Buongiorno. Passaporto e biglietto, per favore. (Dzień dobry. Paszport i bilet, proszę.)", options: [ { text: "Ecco a Lei. A che ora parte il volo? (Proszę bardzo. O której odlatuje lot?)", next: 'lot' } ] }, lot: { bot: "Il volo parte tra poco. Siete pronti? Gate 5. (Lot odlatuje niedługo. Jesteście gotowi? Bramka 5.)", options: [ { text: "Sì, andiamo! Ottimo lavoro squadra! (Tak, jedziemy! Świetna robota zespole!)", next: 'koniec' } ] }, koniec: { bot: "Buon viaggio a tutti! (Dobrej podróży wszystkim!) ✈️", end: true } } },
-          49: { type: 'weekend', title: "Walizki spakowane", location: "Start", trivia: "Techniczna drobnostka: duże wtyczki we Włoszech to tzw. Typ L z bolcem na środku. Od strony retailu specyfikacja urządzeń AGD/RTV też potrafi być tam inna. Ale dla nas liczy się dziś start – walizki gotowe? Cel: włoski rynek FMCG rozpracowany!" }
+          49: { type: 'weekend', title: "Walizki spakowane", location: "Start", trivia: "Techniczna drobnostka: duże wtyczki we Włoszech to tzw. Typ L z bolcem na środku. Od strony retailu specyfikacja urządzeń AGD/RTV też potrafi być tam inna. Ale dla nas liczy się dziś start – walizki gotowe? Cel: Włochy!" }
+        
         };
 
         const generateAllDays = (startDateStr, daysCount) => {
@@ -173,7 +174,7 @@
           const [currentTab, setCurrentTab] = useState('calendar'); 
           const [selectedDay, setSelectedDay] = useState(null);
           
-          const [timeTravel, setTimeTravel] = useState(true);
+          const [timeTravel, setTimeTravel] = useState(false);
           const today = timeTravel ? new Date('2026-07-28T00:00:00') : new Date();
 
           const [showProfileModal, setShowProfileModal] = useState(false);
@@ -294,7 +295,7 @@
              return (
                <div className="min-h-screen flex items-center justify-center bg-slate-900 p-6 text-white text-center">
                  <div className="bg-slate-800 p-8 rounded-xl border-l-4 border-red-500 max-w-lg w-full shadow-2xl">
-                    <h2 className="text-xl font-bold mb-4 text-red-400">Blokada Bezpieczeństwa (Firebase)</h2>
+                    <h2 className="text-xl font-bold mb-4 text-[#CD212A]">Blokada Bezpieczeństwa (Firebase)</h2>
                     <p className="text-sm mb-4 leading-relaxed">{authError}</p>
                  </div>
                </div>
@@ -303,7 +304,7 @@
 
           if (authChecking) {
              return (
-                 <div className="min-h-screen flex flex-col items-center justify-center bg-[#FDF9F1]">
+                 <div className="min-h-screen flex flex-col items-center justify-center bg-[#F4F9FF]">
                      <div className="animate-spin text-[#008C45] mb-4"><CheckCircle size={48} /></div>
                      <p className="font-bold text-[#008C45] animate-pulse">Łączenie z serwerem...</p>
                  </div>
@@ -313,16 +314,16 @@
           if (user && !profile) return <LoginScreen onSubmit={handleLoginSubmit} />;
 
           return (
-            <div className="min-h-screen bg-[#FDF9F1] font-sans text-slate-800 flex flex-col relative">
+            <div className="min-h-screen bg-[#F4F9FF] font-sans text-slate-800 flex flex-col relative">
               <header className="bg-[#008C45] border-b-[6px] border-[#CD212A] p-4 shadow-xl text-white sticky top-0 z-20">
                 <div className="max-w-4xl mx-auto flex justify-between items-center relative z-10">
                   <div>
-                    <h1 className="text-2xl sm:text-3xl font-serif font-bold tracking-wide drop-shadow-md">La Dolce Vita <span className="text-lg uppercase opacity-90 border-2 px-1 rounded font-sans tracking-tighter">IT</span></h1>
-                    <p className="text-white text-xs sm:text-sm mt-0.5 italic tracking-wide">Ciao, {profile?.name}! Cel: Północne Włochy!</p>
+                    <h1 className="text-2xl sm:text-3xl font-serif font-bold tracking-wide drop-shadow-md">Włoska Wyprawa!</h1>
+                    <p className="text-[#FFF5AD] text-xs sm:text-sm mt-0.5 italic tracking-wide">Ciao, {profile?.name}! Cel: Północne Włochy!</p>
                   </div>
                   
                   <div className="flex items-center gap-2 sm:gap-4">
-                     <button onClick={() => setTimeTravel(!timeTravel)} className={`text-[10px] sm:text-xs px-2 py-1 rounded border ${timeTravel ? 'bg-[#FBC02D] text-slate-900 border-[#FBC02D] font-bold' : 'bg-white/20 border-white/30 text-white/90 hover:bg-white/30'}`}>
+                     <button onClick={() => setTimeTravel(!timeTravel)} className={`text-[10px] sm:text-xs px-2 py-1 rounded border ${timeTravel ? 'bg-[#FBC02D] text-slate-900 border-[#FBC02D] font-bold' : 'bg-white/10 border-white/30 text-white/70 hover:bg-white/20'}`}>
                         {timeTravel ? 'Test: Odblokowane' : 'Test: Zegar'}
                      </button>
                      <button onClick={() => setShowProfileModal(true)} className="flex items-center justify-center w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full border border-white/30 transition-all active:scale-95 shadow-inner relative group">
@@ -380,7 +381,7 @@
 
         function NavItem({ icon, label, isActive, onClick }) {
           return (
-            <button onClick={onClick} className={`flex flex-col items-center p-2 rounded-xl transition-all duration-300 w-16 ${isActive ? 'text-[#008C45]' : 'hover:bg-[#FDF9F1] hover:text-[#008C45]'}`}>
+            <button onClick={onClick} className={`flex flex-col items-center p-2 rounded-xl transition-all duration-300 w-16 ${isActive ? 'text-[#CD212A]' : 'hover:bg-red-50 hover:text-[#CD212A]'}`}>
               <div className={`mb-1 transition-transform ${isActive ? 'scale-110 text-[#008C45] drop-shadow-sm' : ''}`}>{icon}</div>
               <span className={isActive ? 'text-[#008C45]' : ''}>{label}</span>
             </button>
@@ -403,23 +404,23 @@
           };
 
           return (
-            <div className="min-h-screen flex items-center justify-center bg-[#FDF9F1] p-4 relative overflow-hidden">
+            <div className="min-h-screen flex items-center justify-center bg-[#F4F9FF] p-4 relative overflow-hidden">
               <div className="bg-white p-8 rounded-3xl shadow-xl w-full max-w-md animate-in zoom-in-95 border-t-8 border-t-[#008C45] border-b-8 border-b-[#CD212A] z-10 relative">
                 <div className="text-center mb-8">
-                  <h1 className="text-4xl font-serif font-bold text-[#008C45] mb-2">Benvenuto! 🇮🇹</h1>
-                  <p className="text-slate-500 italic">Przygotuj się na wyjazd z zespołem</p>
+                  <h1 className="text-4xl font-serif font-bold text-[#008C45] mb-2">Benvenuto!</h1>
+                  <p className="text-slate-500 italic">Przygotujmy się na naszą Włoską Wyprawę!</p>
                 </div>
-                {error && <div className="bg-[#CD212A]/10 text-[#CD212A] p-3 rounded-xl mb-4 text-sm font-semibold border border-[#CD212A]">{error}</div>}
+                {error && <div className="bg-[#FFF5AD] text-[#CD212A] p-3 rounded-xl mb-4 text-sm font-semibold border border-[#FBC02D]">{error}</div>}
                 <form onSubmit={handleSubmit} className="space-y-5">
                   <div>
                     <label className="block text-sm font-bold text-slate-700 mb-1">Twoje Imię</label>
-                    <input type="text" value={name} onChange={e => setName(e.target.value)} className="w-full border-2 border-slate-200 bg-[#FDF9F1] p-3 rounded-xl focus:border-[#008C45] outline-none transition-colors" placeholder="Np. Anna" />
+                    <input type="text" value={name} onChange={e => setName(e.target.value)} className="w-full border-2 border-slate-200 bg-slate-50 p-3 rounded-xl focus:border-[#008C45] outline-none transition-colors" placeholder="Np. Anna" />
                   </div>
                   <div>
                     <label className="block text-sm font-bold text-slate-700 mb-1">Hasło</label>
-                    <input type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full border-2 border-slate-200 bg-[#FDF9F1] p-3 rounded-xl focus:border-[#008C45] outline-none transition-colors" placeholder="Twoje indywidualne hasło" />
+                    <input type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full border-2 border-slate-200 bg-slate-50 p-3 rounded-xl focus:border-[#008C45] outline-none transition-colors" placeholder="Twoje indywidualne hasło" />
                   </div>
-                  <button type="submit" className="w-full bg-[#CD212A] text-white font-bold py-4 rounded-xl mt-4 hover:bg-[#CD212A]/90 shadow-lg text-lg uppercase tracking-wider transition-all hover:scale-[1.02] active:scale-[0.98]">Andiamo!</button>
+                  <button type="submit" className="w-full bg-[#CD212A] text-white font-bold py-4 rounded-xl mt-4 hover:bg-red-700 shadow-lg text-lg uppercase tracking-wider transition-all hover:scale-[1.02] active:scale-[0.98]">Andiamo!</button>
                 </form>
               </div>
             </div>
@@ -449,10 +450,10 @@
                   <div className="text-7xl mb-4 drop-shadow-md animate-bounce">✈️</div>
                   <h3 className="text-4xl font-serif font-bold text-[#008C45] mb-2">Bravissimo!</h3>
                   <p className="text-slate-600 font-medium text-lg mb-6">Ukończyłeś wszystkie przygotowania i zadania w aplikacji.</p>
-                  <div className="bg-[#008C45]/10 p-4 rounded-xl border border-[#008C45] mb-8 inline-block">
+                  <div className="bg-[#F4F9FF] p-4 rounded-xl border border-[#55B9DD] mb-8 inline-block">
                     <p className="text-xl font-bold italic text-[#008C45]">Pakuj walizki. Włochy czekają!</p>
                   </div>
-                  <button onClick={onClose} className="bg-[#008C45] text-white font-bold py-3 px-8 rounded-full shadow-md hover:scale-105 active:scale-95 transition-all w-full">
+                  <button onClick={onClose} className="bg-slate-800 text-white font-bold py-3 px-8 rounded-full shadow-md hover:scale-105 active:scale-95 transition-all w-full">
                     Zamknij okno
                   </button>
                </div>
@@ -467,19 +468,19 @@
                <div className="bg-white w-full max-w-md rounded-3xl overflow-hidden shadow-2xl animate-in zoom-in-95 flex flex-col max-h-[85vh]">
                   <div className="bg-[#008C45] p-6 text-white text-center relative border-b-4 border-[#CD212A] shrink-0">
                      <button onClick={onClose} className="absolute top-4 right-4 bg-white/20 w-8 h-8 rounded-full flex items-center justify-center font-bold hover:bg-white/40">X</button>
-                     <div className="w-16 h-16 bg-white text-[#008C45] rounded-full mx-auto flex items-center justify-center text-2xl font-bold mb-3 shadow-md border-4 border-white">
+                     <div className="w-16 h-16 bg-white text-[#008C45] rounded-full mx-auto flex items-center justify-center text-2xl font-bold mb-3 shadow-md border-4 border-green-700">
                        {profile?.name?.substring(0, 2).toUpperCase()}
                      </div>
                      <h2 className="text-2xl font-serif font-bold">{profile?.name}</h2>
-                     <p className="text-white text-sm">Twój profil i osiągnięcia</p>
+                     <p className="text-[#FFF5AD] text-sm">Twój profil i osiągnięcia</p>
                   </div>
-                  <div className="p-6 overflow-y-auto bg-[#FDF9F1] flex-1">
+                  <div className="p-6 overflow-y-auto bg-[#F4F9FF] flex-1">
                      <h3 className="font-bold text-slate-400 uppercase tracking-widest text-xs mb-4 text-center">Il Medagliere (Gablota Odznak)</h3>
                      <div className="grid grid-cols-2 gap-4">
                         {Object.values(BADGES).map(b => {
                            const isEarned = myBadges.includes(b.id);
                            return (
-                             <div key={b.id} className={`p-4 rounded-2xl flex flex-col items-center text-center border-2 transition-all ${isEarned ? 'bg-white border-[#FBC02D] shadow-md' : 'bg-white border-slate-200 opacity-60 grayscale'}`}>
+                             <div key={b.id} className={`p-4 rounded-2xl flex flex-col items-center text-center border-2 transition-all ${isEarned ? 'bg-white border-[#FBC02D] shadow-md' : 'bg-slate-100 border-slate-200 opacity-60 grayscale'}`}>
                                 <div className="text-4xl mb-2 drop-shadow-sm">{b.icon}</div>
                                 <h4 className={`font-serif font-bold text-sm mb-1 ${isEarned ? 'text-slate-800' : 'text-slate-500'}`}>{b.name}</h4>
                                 <p className="text-[10px] text-slate-500 leading-tight">{b.desc}</p>
@@ -506,7 +507,7 @@
           return (
             <div className="animate-in fade-in duration-500">
               <div className="mb-6 bg-white p-5 rounded-2xl shadow-sm border-l-4 border-l-[#008C45] flex gap-4 items-start">
-                <div className="bg-[#008C45]/10 p-3 rounded-full text-[#008C45] shrink-0 border border-[#008C45]/20">
+                <div className="bg-[#F4F9FF] p-3 rounded-full text-[#008C45] shrink-0 border border-[#55B9DD]">
                   <Plane size={24} />
                 </div>
                 <div>
@@ -534,12 +535,12 @@
 
                       let btnClass = "relative aspect-[4/5] rounded-xl flex flex-col items-center p-1 transition-all shadow-sm border-2 font-serif group justify-between ";
                       
-                      if (!unlocked) { btnClass += "bg-white border-slate-200 text-slate-300 cursor-not-allowed opacity-60"; } 
-                      else if (isCompleted) { btnClass += "bg-[#008C45]/10 border-[#008C45] text-[#008C45] hover:bg-[#008C45]/20 cursor-pointer"; } 
-                      else if (isWknd || isSim) { btnClass += "bg-[#55B9DD]/10 border-[#55B9DD] text-[#55B9DD] hover:bg-[#55B9DD]/20 hover:-translate-y-1 cursor-pointer"; } 
-                      else if (isGame) { btnClass += "bg-[#FFF5AD] border-[#FBC02D] text-slate-800 hover:bg-[#FBC02D]/40 hover:-translate-y-1 cursor-pointer"; } 
-                      else if (isVideo) { btnClass += "bg-[#CD212A]/10 border-[#CD212A] text-[#CD212A] hover:bg-[#CD212A]/20 hover:-translate-y-1 cursor-pointer"; } 
-                      else { btnClass += "bg-white border-slate-300 text-slate-700 hover:border-[#008C45] hover:-translate-y-1 cursor-pointer"; }
+                      if (!unlocked) { btnClass += "bg-slate-50 border-slate-100 text-slate-300 cursor-not-allowed"; } 
+                      else if (isCompleted) { btnClass += "bg-[#F4F9FF] border-[#008C45] text-[#008C45] hover:bg-green-50 cursor-pointer"; } 
+                      else if (isWknd || isSim) { btnClass += "bg-[#F4F9FF] border-[#55B9DD] text-[#55B9DD] hover:bg-blue-50 hover:-translate-y-1 cursor-pointer"; } 
+                      else if (isGame) { btnClass += "bg-[#FFF5AD] border-[#FBC02D] text-yellow-800 hover:bg-yellow-100 hover:-translate-y-1 cursor-pointer"; } 
+                      else if (isVideo) { btnClass += "bg-red-50 border-[#CD212A] text-[#CD212A] hover:bg-red-100 hover:-translate-y-1 cursor-pointer"; } 
+                      else { btnClass += "bg-white border-yellow-200 text-slate-700 hover:border-yellow-400 hover:-translate-y-1 cursor-pointer"; }
 
                       return (
                           <button key={dayNum} disabled={!unlocked} onClick={() => openDay(dayNum)} className={btnClass}>
@@ -571,13 +572,13 @@
                    </button>
                 ) : (
                   <div className="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-4">
-                    <div className="bg-[#FFF5AD] p-3 rounded-full shrink-0 border border-[#FBC02D]"><Medal className="w-6 h-6 text-[#FBC02D]" /></div>
+                    <div className="bg-[#FFF5AD] p-3 rounded-full shrink-0"><Medal className="w-6 h-6 text-yellow-600" /></div>
                     <div className="w-full">
                       <div className="flex justify-between mb-1 text-sm font-bold">
                          <span className="text-slate-600">Wielki Finał</span>
-                         <span className="text-slate-800">{completedCount} / 49</span>
+                         <span className="text-yellow-600">{completedCount} / 49</span>
                       </div>
-                      <div className="w-full bg-[#FDF9F1] rounded-full h-2.5 overflow-hidden border border-slate-200">
+                      <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden border border-slate-200">
                          <div className="bg-[#008C45] h-full transition-all duration-1000" style={{width: `${(completedCount / 49) * 100}%`}}></div>
                       </div>
                       <p className="text-[10px] sm:text-xs text-slate-400 mt-1.5 font-medium">Ukończ wszystkie dni, by z dumą zamknąć przygotowania!</p>
@@ -598,22 +599,22 @@
           const isVid = data.type === 'video';
           const isWknd = data.type === 'weekend';
 
-          let theme = 'bg-[#008C45] text-white';
+          let theme = 'bg-[#008C45]';
           let Icon = MapPin;
           
           if (isGame) { theme = 'bg-[#FBC02D] text-slate-900'; Icon = Award; }
-          else if (isSim) { theme = 'bg-[#55B9DD] text-slate-900'; Icon = MessageCircle; }
-          else if (isWknd) { theme = 'bg-[#55B9DD] text-slate-900'; Icon = Coffee; }
-          else if (isVid) { theme = 'bg-[#CD212A] text-white'; Icon = Video; }
+          else if (isSim) { theme = 'bg-[#55B9DD]'; Icon = MessageCircle; }
+          else if (isWknd) { theme = 'bg-[#55B9DD]'; Icon = Coffee; }
+          else if (isVid) { theme = 'bg-[#CD212A]'; Icon = Video; }
 
           return (
             <div className="animate-in slide-in-from-right-8 duration-300 pb-10">
-              <button onClick={props.onBack} className="flex items-center text-[#CD212A] font-bold mb-4 hover:bg-[#CD212A]/10 px-4 py-2 rounded-full transition-colors bg-white border border-[#CD212A]/20 shadow-sm w-fit">
+              <button onClick={props.onBack} className="flex items-center text-[#CD212A] font-bold mb-4 hover:bg-red-50 px-4 py-2 rounded-full transition-colors bg-white border border-red-100 shadow-sm w-fit">
                 <ArrowLeft className="mr-2 w-4 h-4" /> Wróć do Planu
               </button>
 
               <div className="bg-white rounded-3xl shadow-xl overflow-hidden mb-6 border border-slate-100">
-                <div className={`p-6 sm:p-8 relative ${theme}`}>
+                <div className={`p-6 sm:p-8 relative ${theme} ${isGame ? '' : 'text-white'}`}>
                   <div className="flex justify-between items-start gap-4 relative z-10">
                     <div>
                       <p className="text-[10px] sm:text-xs font-bold uppercase tracking-widest opacity-80 mb-2 flex items-center gap-1.5 font-sans">
@@ -625,7 +626,7 @@
                   </div>
                 </div>
 
-                <div className="p-5 sm:p-8 bg-white">
+                <div className="p-5 sm:p-8 bg-[#F4F9FF]">
                   {data.type === 'daily' && <StandardDayContent {...props} />}
                   {data.type === 'weekend' && <WeekendDayContent {...props} />}
                   {data.type === 'minigame_match' && <MinigameMatchContent {...props} />}
@@ -646,17 +647,17 @@
             <div className="space-y-8">
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-slate-200">
-                  <h3 className="font-serif font-bold text-[#008C45] mb-3 text-lg flex items-center gap-2"><BrainCircuit size={20} className="text-[#FBC02D]" /> Ciekawostka dnia</h3>
+                  <h3 className="font-serif font-bold text-[#008C45] mb-3 text-lg flex items-center gap-2"><BrainCircuit size={20} /> Ciekawostka dnia</h3>
                   <p className="text-slate-700 text-sm sm:text-base leading-relaxed">{data.trivia}</p>
                 </div>
                 {data.challenge && (
                   <div className="bg-[#FFF5AD] rounded-2xl p-5 sm:p-6 border border-[#FBC02D] flex flex-col justify-between">
                     <div>
-                      <h3 className="font-serif font-bold text-slate-800 mb-3 text-lg flex items-center gap-2"><Target size={20} className="text-[#CD212A]" /> Wyzwanie</h3>
-                      <p className="text-slate-800 text-sm sm:text-base mb-4">{data.challenge}</p>
+                      <h3 className="font-serif font-bold text-yellow-800 mb-3 text-lg flex items-center gap-2"><Target size={20} /> Wyzwanie</h3>
+                      <p className="text-yellow-800 text-sm sm:text-base mb-4">{data.challenge}</p>
                     </div>
-                    <button onClick={onToggleChallenge} className={`flex items-center justify-center gap-2 w-full py-3 rounded-xl font-bold transition-all border-2 ${isChallengeCompleted ? 'bg-[#008C45] border-[#008C45] text-white shadow-md' : 'bg-white border-[#FBC02D] text-slate-800 hover:bg-[#FFF5AD]'}`}>
-                      {isChallengeCompleted ? <CheckCircle size={20} /> : <div className="w-5 h-5 rounded-full border-2 border-[#008C45]" />}
+                    <button onClick={onToggleChallenge} className={`flex items-center justify-center gap-2 w-full py-3 rounded-xl font-bold transition-all border-2 ${isChallengeCompleted ? 'bg-[#008C45] border-[#008C45] text-white shadow-md' : 'bg-white border-[#FBC02D] text-yellow-800 hover:bg-yellow-50'}`}>
+                      {isChallengeCompleted ? <CheckCircle size={20} /> : <div className="w-5 h-5 rounded-full border-2 border-yellow-500" />}
                       {isChallengeCompleted ? 'Zrobione!' : 'Odhacz zadanie'}
                     </button>
                   </div>
@@ -674,7 +675,7 @@
 
               {data.quiz && (
                 <div className="border-t border-slate-200 pt-6 bg-white -mx-5 -mb-5 sm:-mx-8 sm:-mb-8 p-5 sm:p-8">
-                  <h3 className="text-xl font-serif font-bold mb-4 flex items-center gap-2 text-[#008C45]"><Search className="text-[#FBC02D]" size={22}/> Szybki Quiz</h3>
+                  <h3 className="text-xl font-serif font-bold mb-4 flex items-center gap-2"><Search className="text-slate-400" size={22}/> Szybki Quiz</h3>
                   <SingleQuiz quizData={data.quiz} onFinish={() => setQuizFinished(true)} />
                   <CompleteButton isDayCompleted={isDayCompleted} canComplete={canComplete} onComplete={onComplete} icon="🍕" lockedText="Rozwiąż quiz najpierw!" />
                 </div>
@@ -686,9 +687,9 @@
         function WeekendDayContent({ data, isDayCompleted, onComplete }) {
           return (
             <div className="space-y-6">
-              <div className="bg-[#FDF9F1] rounded-2xl p-8 text-center shadow-sm border border-[#55B9DD]">
+              <div className="bg-white rounded-2xl p-8 text-center shadow-sm border border-[#55B9DD]">
                 <Coffee className="w-16 h-16 mx-auto text-[#55B9DD] mb-4" />
-                <h3 className="font-serif font-bold text-[#55B9DD] mb-4 text-2xl">Weekendowy luz</h3>
+                <h3 className="font-serif font-bold text-blue-900 mb-4 text-2xl">Weekendowy luz</h3>
                 <p className="text-slate-700 text-lg leading-relaxed">{data.trivia}</p>
               </div>
               <CompleteButton isDayCompleted={isDayCompleted} canComplete={true} onComplete={onComplete} icon="☕" />
@@ -722,7 +723,7 @@
 
           return (
             <div className="space-y-6">
-              <div className="bg-[#FFF5AD] p-4 rounded-2xl border border-[#FBC02D] text-slate-800 font-medium">
+              <div className="bg-[#FFF5AD] p-4 rounded-2xl border border-[#FBC02D] text-yellow-900 font-medium">
                 {data.trivia}
               </div>
               {!gameFinished ? (
@@ -735,7 +736,7 @@
                          let cls = "w-full p-3 rounded-xl border-2 font-bold text-sm sm:text-base text-center transition-all ";
                          if (isMatched) cls += "opacity-0 pointer-events-none"; 
                          else if (isSelected) cls += "bg-[#FBC02D] border-[#FBC02D] text-slate-900 scale-105";
-                         else cls += "bg-white border-slate-200 text-slate-700 hover:border-[#FBC02D] shadow-sm";
+                         else cls += "bg-white border-slate-200 text-slate-700 hover:border-yellow-400 shadow-sm";
                          return <button key={'it'+w.it} onClick={() => setSelectedIt(w.it)} className={cls}>{w.it}</button>
                        })}
                     </div>
@@ -747,16 +748,16 @@
                          let cls = "w-full p-3 rounded-xl border-2 font-bold text-sm sm:text-base text-center transition-all ";
                          if (isMatched) cls += "opacity-0 pointer-events-none"; 
                          else if (isSelected) cls += "bg-[#FBC02D] border-[#FBC02D] text-slate-900 scale-105";
-                         else cls += "bg-white border-slate-200 text-slate-700 hover:border-[#FBC02D] shadow-sm";
+                         else cls += "bg-white border-slate-200 text-slate-700 hover:border-yellow-400 shadow-sm";
                          return <button key={'pl'+w.pl} onClick={() => setSelectedPl(w.pl)} className={cls}>{w.pl}</button>
                        })}
                     </div>
                  </div>
               ) : (
-                 <div className="bg-[#008C45]/10 p-8 rounded-2xl text-center border-2 border-[#008C45] animate-in zoom-in">
+                 <div className="bg-[#F4F9FF] p-8 rounded-2xl text-center border-2 border-[#008C45] animate-in zoom-in">
                    <CheckCircle className="w-16 h-16 mx-auto text-[#008C45] mb-4" />
                    <h3 className="text-2xl font-serif font-bold text-[#008C45]">Complimenti!</h3>
-                   <p className="text-slate-800 mt-2">Świetnie znasz te słówka.</p>
+                   <p className="text-green-800 mt-2">Świetnie znasz te słówka.</p>
                  </div>
               )}
               <CompleteButton isDayCompleted={isDayCompleted} canComplete={isDayCompleted || gameFinished} onComplete={onComplete} icon="🏆" lockedText="Połącz wszystkie pary!" />
@@ -787,12 +788,12 @@
 
           return (
             <div className="space-y-6">
-              <div className="bg-[#FFF5AD] p-4 rounded-2xl border border-[#FBC02D] text-slate-800">
+              <div className="bg-[#FFF5AD] p-4 rounded-2xl border border-[#FBC02D] text-yellow-900">
                 <p className="font-bold mb-1">Przetłumacz (klikając słowa):</p>
                 <p className="text-lg italic">"{data.translation}"</p>
               </div>
 
-              <div className="bg-[#FDF9F1] border-2 border-dashed border-[#55B9DD] rounded-2xl p-4 min-h-[80px] flex flex-wrap gap-2 content-start">
+              <div className="bg-white border-2 border-dashed border-slate-300 rounded-2xl p-4 min-h-[80px] flex flex-wrap gap-2 content-start">
                 {line.map((w, i) => (
                   <button key={'line'+i} onClick={() => moveWord(w, false)} className="bg-[#FBC02D] text-slate-900 font-bold px-4 py-2 rounded-lg shadow-sm active:scale-95 transition-transform">
                     {w}
@@ -803,7 +804,7 @@
 
               <div className="flex flex-wrap gap-2 justify-center py-4">
                  {bank.map((w, i) => (
-                  <button key={'bank'+i} onClick={() => moveWord(w, true)} className="bg-white border-2 border-slate-200 text-slate-700 font-bold px-4 py-2 rounded-lg shadow-sm hover:border-[#FBC02D] active:scale-95 transition-transform">
+                  <button key={'bank'+i} onClick={() => moveWord(w, true)} className="bg-white border-2 border-slate-200 text-slate-700 font-bold px-4 py-2 rounded-lg shadow-sm hover:border-yellow-400 active:scale-95 transition-transform">
                     {w}
                   </button>
                 ))}
@@ -839,28 +840,28 @@
 
           return (
             <div className="space-y-6">
-               <div className="bg-[#55B9DD]/10 p-4 rounded-2xl border border-[#55B9DD] text-slate-800 font-medium text-sm">
+               <div className="bg-[#F4F9FF] p-4 rounded-2xl border border-[#55B9DD] text-blue-900 font-medium text-sm">
                 {data.trivia}
               </div>
 
               <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm flex flex-col h-[400px]">
-                 <div className="bg-[#FDF9F1] p-3 text-center border-b border-slate-200 font-bold text-slate-600 text-sm">
+                 <div className="bg-slate-100 p-3 text-center border-b border-slate-200 font-bold text-slate-600 text-sm">
                    Włoch lokalny (Symulator)
                  </div>
                  <div className="flex-1 p-4 overflow-y-auto space-y-4">
                     {history.map((msg, i) => (
                       <div key={i} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in`}>
-                         <div className={`max-w-[80%] p-3 rounded-2xl text-sm ${msg.sender === 'user' ? 'bg-[#008C45] text-white rounded-tr-none' : 'bg-[#FDF9F1] text-slate-800 rounded-tl-none border border-slate-200'}`}>
+                         <div className={`max-w-[80%] p-3 rounded-2xl text-sm ${msg.sender === 'user' ? 'bg-[#008C45] text-white rounded-tr-none' : 'bg-slate-100 text-slate-800 rounded-tl-none border border-slate-200'}`}>
                            {msg.text}
                          </div>
                       </div>
                     ))}
                  </div>
                  {!isEnd && currentNode?.options && (
-                    <div className="p-3 bg-[#FDF9F1] border-t border-slate-200 flex flex-col gap-2">
+                    <div className="p-3 bg-slate-50 border-t border-slate-200 flex flex-col gap-2">
                       <span className="text-[10px] uppercase font-bold text-slate-400 text-center mb-1">Wybierz odpowiedź:</span>
                       {currentNode.options.map((opt, i) => (
-                        <button key={i} onClick={() => handleChoice(opt)} className="bg-white border-2 border-[#55B9DD]/50 hover:border-[#55B9DD] hover:bg-[#55B9DD] hover:text-white text-[#55B9DD] font-bold p-3 rounded-xl transition-all active:scale-95 text-left text-sm">
+                        <button key={i} onClick={() => handleChoice(opt)} className="bg-white border-2 border-blue-200 hover:border-[#55B9DD] text-blue-900 font-bold p-3 rounded-xl transition-all active:scale-95 text-left text-sm">
                           {opt.text}
                         </button>
                       ))}
@@ -876,10 +877,10 @@
           const [quizFinished, setQuizFinished] = useState(false);
           return (
             <div className="space-y-6">
-              <div className="bg-[#CD212A]/10 p-4 rounded-2xl border border-[#CD212A] text-slate-800 font-medium">
+              <div className="bg-red-50 p-4 rounded-2xl border border-red-200 text-red-900 font-medium">
                 {data.trivia}
               </div>
-              <div className="aspect-video w-full rounded-2xl overflow-hidden shadow-md border-4 border-slate-800 bg-black">
+              <div className="aspect-video w-full rounded-2xl overflow-hidden shadow-md border-4 border-[#CD212A] bg-black">
                  <iframe 
                    width="100%" height="100%" 
                    src={`https://www.youtube.com/embed/${data.videoId}?rel=0`} 
@@ -889,8 +890,8 @@
                    allowFullScreen
                  ></iframe>
               </div>
-              <a href={`https://www.youtube.com/watch?v=${data.videoId}`} target="_blank" rel="noopener noreferrer" className="block text-center text-sm font-bold text-[#CD212A] hover:bg-[#CD212A]/20 bg-[#CD212A]/10 py-3 rounded-xl transition-colors">
-                 Twórca zablokował wideo? Kliknij tutaj, by obejrzeć je bezpośrednio na YouTube! ↗️
+              <a href={`https://www.youtube.com/watch?v=${data.videoId}`} target="_blank" rel="noopener noreferrer" className="block text-center text-sm font-bold text-[#CD212A] hover:text-red-800 bg-red-50 py-3 rounded-xl transition-colors">
+                 Twórca zablokował wideo? Kliknij tutaj, by obejrzeć je na YouTube! ↗️
               </a>
               <div className="border-t border-slate-200 pt-6">
                  <SingleQuiz quizData={{question: data.question, options: data.options, answer: data.answer}} onFinish={() => setQuizFinished(true)} />
@@ -914,7 +915,7 @@
                 <p className="font-bold text-base sm:text-lg text-slate-800 leading-tight">{word.it}</p>
                 <p className="text-slate-500 text-xs sm:text-sm mt-0.5">{word.pl}</p>
               </div>
-              <button onClick={() => speakWord(word.it)} className="w-10 h-10 rounded-full bg-[#FDF9F1] text-[#CD212A] flex items-center justify-center group-hover:bg-[#CD212A] group-hover:text-white transition-colors shrink-0">
+              <button onClick={() => speakWord(word.it)} className="w-10 h-10 rounded-full bg-[#F4F9FF] text-[#CD212A] flex items-center justify-center group-hover:bg-[#CD212A] group-hover:text-white transition-colors shrink-0">
                 <Volume2 className="w-5 h-5" />
               </button>
             </div>
@@ -925,14 +926,14 @@
           const [selected, setSelected] = useState(null);
           const handleSelect = (idx) => { setSelected(idx); if (onFinish) onFinish(); };
           return (
-            <div className="bg-[#FDF9F1] p-5 rounded-2xl border border-slate-200">
+            <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200">
               <p className="font-bold text-base sm:text-lg mb-5 text-slate-800 font-serif">{quizData.question}</p>
               <div className="space-y-2 sm:space-y-3">
                 {quizData.options.map((opt, idx) => {
                   let btnClass = "w-full text-left p-3 sm:p-4 rounded-xl border-2 font-medium transition-all text-sm sm:text-base ";
                   if (selected === null) btnClass += "bg-white border-slate-200 hover:border-[#008C45]";
-                  else if (idx === quizData.answer) btnClass += "bg-[#008C45]/10 border-[#008C45] text-[#008C45]"; 
-                  else if (idx === selected) btnClass += "bg-[#CD212A]/10 border-[#CD212A] text-[#CD212A]"; 
+                  else if (idx === quizData.answer) btnClass += "bg-green-100 border-[#008C45] text-green-900"; 
+                  else if (idx === selected) btnClass += "bg-red-100 border-[#CD212A] text-red-900"; 
                   else btnClass += "bg-white border-slate-200 opacity-50"; 
                   return <button key={idx} disabled={selected !== null} onClick={() => handleSelect(idx)} className={btnClass}>{opt}</button>;
                 })}
@@ -951,7 +952,7 @@
                   ${isDayCompleted 
                     ? 'bg-slate-200 text-slate-500 shadow-none' 
                     : canComplete
-                      ? 'bg-[#008C45] text-white hover:bg-[#008C45]/90 shadow-lg shadow-green-700/30 hover:scale-105 active:scale-95 cursor-pointer animate-pulse'
+                      ? 'bg-[#008C45] text-white hover:bg-[#006838] shadow-lg hover:scale-105 active:scale-95 cursor-pointer animate-pulse'
                       : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-80'}`}
               >
                 {isDayCompleted ? <><CheckCircle className="w-6 h-6" /> Zaliczone</> : <>
@@ -972,20 +973,16 @@
               const cleanTitle = data.title;
               const formattedTitle = `Dzień ${dayNum}: ${cleanTitle}`;
               
-              if (data.words && data.type === 'daily') {
-                  data.words.forEach(w => {
-                      if (w.it && w.it.trim() !== '') words.push({ day: dayNum, ...w });
-                  });
+              if (data.words) {
+                 data.words.forEach(w => {
+                    if (w.it && w.it.trim() !== '') {
+                        words.push({ day: dayNum, ...w });
+                    }
+                 });
               }
-              if (data.pairs) {
-                  data.pairs.forEach(p => {
-                      if (p.it && p.it.trim() !== '') words.push({ day: dayNum, ...p });
-                  });
-              }
-
-              // Zmiana: Filtrujemy techniczne instrukcje z minigier i symulacji
-              if (data.trivia && !data.type.includes('minigame') && data.type !== 'simulation') {
-                  trivias.push({ day: dayNum, text: data.trivia, title: formattedTitle });
+              
+              if (data.trivia && data.type !== 'minigame_match' && data.type !== 'minigame_scramble' && data.type !== 'simulation') {
+                trivias.push({ day: dayNum, text: data.trivia, title: formattedTitle });
               }
               
               if (data.challenge) challenges.push({ day: dayNum, text: data.challenge, title: formattedTitle });
@@ -993,6 +990,7 @@
           });
           return { words, trivias, challenges };
         };
+
         const groupItemsByWeek = (items) => {
           const grouped = {};
           items.forEach(item => { const week = Math.ceil(item.day / 7); if (!grouped[week]) grouped[week] = []; grouped[week].push(item); });
@@ -1056,12 +1054,12 @@
                        const isDone = completedChalls.includes(c.day);
                        return (
                          <div key={idx} className={`p-4 rounded-xl border flex gap-4 transition-all ${isDone ? 'bg-[#FFF5AD] border-[#FBC02D]' : 'bg-white border-slate-200'}`}>
-                           <button onClick={() => onToggle(c.day)} className={`w-7 h-7 rounded-full shrink-0 flex items-center justify-center border-2 mt-0.5 cursor-pointer hover:scale-110 active:scale-95 transition-all ${isDone ? 'bg-[#008C45] border-[#008C45] text-white shadow-sm' : 'bg-white border-slate-300 hover:border-[#008C45] shadow-sm'}`} title={isDone ? "Odznacz wyzwanie" : "Zaznacz wyzwanie jako wykonane"}>
+                           <button onClick={() => onToggle(c.day)} className={`w-7 h-7 rounded-full shrink-0 flex items-center justify-center border-2 mt-0.5 cursor-pointer hover:scale-110 active:scale-95 transition-all ${isDone ? 'bg-[#008C45] border-[#008C45] text-white shadow-sm' : 'bg-white border-slate-300 hover:border-[#FBC02D] shadow-sm'}`} title={isDone ? "Odznacz wyzwanie" : "Zaznacz wyzwanie jako wykonane"}>
                              {isDone && <CheckCircle size={16} />}
                            </button>
                            <div>
-                             <h4 className={`font-serif font-bold text-sm mb-1 ${isDone ? 'text-slate-800' : 'text-slate-800'}`}>{c.title}</h4>
-                             <p className={`text-sm ${isDone ? 'text-slate-700' : 'text-slate-600'}`}>{c.text}</p>
+                             <h4 className={`font-serif font-bold text-sm mb-1 ${isDone ? 'text-green-900' : 'text-slate-800'}`}>{c.title}</h4>
+                             <p className={`text-sm ${isDone ? 'text-green-800' : 'text-slate-600'}`}>{c.text}</p>
                            </div>
                          </div>
                        );
@@ -1091,22 +1089,22 @@
                    const completed = u.completedDays?.length || 0;
                    const uBadges = u.badges || [];
                    return (
-                     <div key={u.id} className={`bg-white p-5 rounded-2xl shadow-sm border-2 transition-all hover:scale-[1.01] ${isMe ? 'border-[#008C45] bg-[#008C45]/5' : 'border-[#FDF9F1]'}`}>
+                     <div key={u.id} className={`bg-white p-5 rounded-2xl shadow-sm border-2 transition-all hover:scale-[1.01] ${isMe ? 'border-[#008C45] bg-green-50/30' : 'border-slate-100'}`}>
                         <div className="flex items-center gap-4 mb-4">
-                           <div className={`w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold shrink-0 shadow-inner ${isMe ? 'bg-[#008C45] text-white' : 'bg-[#FDF9F1] text-slate-600'}`}>
+                           <div className={`w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold shrink-0 shadow-inner ${isMe ? 'bg-[#008C45] text-white' : 'bg-slate-200 text-slate-600'}`}>
                              {u.name.substring(0,2).toUpperCase()}
                            </div>
                            <div className="flex-1">
                              <div className="flex justify-between items-end mb-1">
                                <h3 className="font-bold text-lg text-slate-800">{u.name} {isMe && <span className="text-xs text-[#008C45] font-bold ml-1 uppercase tracking-wider">(Ty)</span>}</h3>
-                               <span className="text-sm font-bold text-slate-800">{completed} / 49 dni</span>
+                               <span className="text-sm font-bold text-yellow-600">{completed} / 49 dni</span>
                              </div>
-                             <div className="w-full bg-[#FDF9F1] rounded-full h-2.5 overflow-hidden border border-slate-200">
-                                <div className="bg-[#008C45] h-full transition-all duration-1000" style={{width: `${(completed / 49) * 100}%`}}></div>
+                             <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden border border-slate-200">
+                                <div className="bg-[#008C45] h-full rounded-full transition-all duration-1000" style={{width: `${(completed / 49) * 100}%`}}></div>
                              </div>
                            </div>
                         </div>
-                        <div className="bg-[#FDF9F1] p-3 rounded-xl border border-slate-100 min-h-[64px] flex flex-wrap gap-2 items-center">
+                        <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 min-h-[64px] flex flex-wrap gap-2 items-center">
                            {uBadges.length === 0 ? <span className="text-xs text-slate-400 m-auto italic font-medium">Brak zdobytych odznak</span> : 
                              uBadges.map(bId => (
                                <div key={bId} className="w-10 h-10 rounded-full bg-white shadow-sm border border-slate-200 flex items-center justify-center text-xl hover:scale-110 transition-transform cursor-help" title={BADGES[bId]?.name}>
@@ -1126,12 +1124,33 @@
         function ChatView({ profile, allUsers, user, today }) {
           const [messages, setMessages] = useState([]);
           const [newMessage, setNewMessage] = useState('');
+          const [replyTo, setReplyTo] = useState(null);
           const chatRef = useRef(null);
 
           const currentWeek = Math.max(1, Math.min(Math.floor(Math.max(0, today.getTime() - new Date('2026-06-08T00:00:00').getTime()) / (1000 * 60 * 60 * 24) / 7) + 1, 7));
           const WEEKLY_QUESTIONS = {
             1: "Czego najbardziej nie możesz się doczekać podczas tego wyjazdu?", 2: "Jaka jest Twoja ulubiona włoska potrawa?", 3: "Wolisz intensywne zwiedzanie, czy relaks z kawą i ładnym widokiem?", 4: "Jakie włoskie produkty spożywcze najbardziej chcesz przetestować na wyjeździe?", 5: "Jaką kulinarną pamiątkę na pewno przywieziesz do Polski?", 6: "Jakie włoskie słówko najbardziej zapadło Ci w pamięć?", 7: "Wielkie odliczanie! O czym zazwyczaj zapominasz przy pakowaniu?"
           };
+
+          // Check and add system message for the week
+          useEffect(() => {
+              const checkSystemMsg = async () => {
+                  const qDocRef = doc(db, 'messages', `weekly_bot_${currentWeek}`);
+                  const docSnap = await getDoc(qDocRef);
+                  if (!docSnap.exists()) {
+                      await setDoc(qDocRef, {
+                          text: WEEKLY_QUESTIONS[currentWeek],
+                          authorId: 'bot',
+                          authorName: `🤖 Pytanie Tygodnia ${currentWeek}`,
+                          isSystem: true,
+                          week: currentWeek,
+                          timestamp: serverTimestamp()
+                      });
+                  }
+              };
+              checkSystemMsg();
+          }, [currentWeek]);
+
 
           useEffect(() => {
             if (!user) return;
@@ -1145,44 +1164,134 @@
             return () => unsubscribe();
           }, [user]);
 
+          const toggleReaction = async (msgId, emoji) => {
+             const msg = messages.find(m => m.id === msgId);
+             if(!msg) return;
+             const currentReactions = msg.reactions || {};
+             const emojiUsers = currentReactions[emoji] || [];
+             const isReacted = emojiUsers.includes(profile.name);
+             
+             let newEmojiUsers;
+             if(isReacted) {
+                 newEmojiUsers = emojiUsers.filter(n => n !== profile.name);
+             } else {
+                 newEmojiUsers = [...emojiUsers, profile.name];
+             }
+             
+             const ref = doc(db, 'messages', msgId);
+             await setDoc(ref, {
+                 reactions: {
+                     ...currentReactions,
+                     [emoji]: newEmojiUsers
+                 }
+             }, { merge: true });
+          };
+
+
           const sendMessage = async (e) => {
             e.preventDefault();
             if (!newMessage.trim() || !user || !profile) return;
             const msgRef = collection(db, 'messages');
-            await addDoc(msgRef, { text: newMessage.trim(), authorId: profile.id, authorName: profile.name, timestamp: serverTimestamp() });
+            await addDoc(msgRef, { 
+                text: newMessage.trim(), 
+                authorId: profile.id, 
+                authorName: profile.name, 
+                timestamp: serverTimestamp(),
+                replyTo: replyTo ? { id: replyTo.id, authorName: replyTo.authorName, text: replyTo.text } : null 
+            });
             setNewMessage('');
+            setReplyTo(null);
           };
 
           return (
-            <div className="animate-in fade-in flex flex-col h-[calc(100vh-160px)] sm:h-auto max-w-2xl mx-auto">
+            <div className="animate-in fade-in flex flex-col h-[calc(100vh-220px)] max-w-2xl mx-auto">
               <h2 className="text-2xl font-serif font-bold mb-4 text-[#008C45]">Czat Zespołu</h2>
               
-              <div className="flex-1 bg-white border border-slate-200 rounded-2xl flex flex-col overflow-hidden min-h-[350px] shadow-sm">
-                <div className="bg-[#FFF5AD] p-3 sm:p-4 border-b border-[#FBC02D] flex gap-3 items-start shrink-0">
-                  <div className="bg-[#FBC02D] text-slate-900 p-2 rounded-full shrink-0 shadow-sm"><MessageCircle size={16} /></div>
-                  <div>
-                    <span className="text-[10px] font-bold text-slate-800 uppercase tracking-wider font-sans">Pytanie Tygodnia {currentWeek}</span>
-                    <p className="text-sm font-bold text-slate-900 mt-0.5 font-serif">{WEEKLY_QUESTIONS[currentWeek]}</p>
-                  </div>
-                </div>
+              <div className="flex-1 bg-white border border-slate-200 rounded-2xl flex flex-col overflow-hidden shadow-sm relative">
                 
-                <div ref={chatRef} className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#FDF9F1]">
+                <div ref={chatRef} className="flex-1 overflow-y-auto p-4 space-y-6 bg-[#F4F9FF]">
                   {messages.length === 0 ? <div className="text-center text-slate-400 mt-10 text-sm bg-white p-4 rounded-xl border border-slate-100 inline-block mx-auto">Napisz jako pierwszy!</div> : 
-                    messages.map(msg => (
-                      <div key={msg.id} className={`flex flex-col ${msg.authorId === profile?.id ? 'items-end' : 'items-start'}`}>
-                        <span className="text-[10px] text-slate-400 font-bold mb-1 px-1">{msg.authorId === profile?.id ? 'Ty' : msg.authorName}</span>
-                        <div className={`max-w-[85%] p-3 rounded-2xl text-sm shadow-sm ${msg.authorId === profile?.id ? 'bg-[#008C45] text-white rounded-tr-none' : 'bg-white border border-slate-200 text-slate-800 rounded-tl-none'}`}>
-                          {msg.text}
-                        </div>
-                      </div>
-                    ))
+                    messages.map((msg, i) => {
+                        const isMe = msg.authorId === profile?.id;
+                        const isSys = msg.isSystem;
+
+                        return (
+                            <div key={msg.id || i} className={`flex flex-col ${isSys ? 'items-center my-6' : (isMe ? 'items-end' : 'items-start')}`}>
+                                {!isSys && <span className="text-[10px] text-slate-400 font-bold mb-1 px-1">{isMe ? 'Ty' : msg.authorName}</span>}
+                                
+                                <div className={`px-4 py-3 rounded-2xl max-w-[85%] shadow-sm text-sm relative ${
+                                    isSys ? 'bg-[#FFF5AD] border-2 border-[#FBC02D] text-slate-800 w-full sm:w-[90%] text-center' :
+                                    (isMe ? 'bg-[#008C45] text-white rounded-tr-none' : 'bg-white border border-[#55B9DD]/30 text-slate-800 rounded-tl-none')
+                                }`}>
+                                    
+                                    {/* Reply Thread UI */}
+                                    {msg.replyTo && (
+                                        <div className={`text-[10px] mb-2 pl-2 border-l-2 py-0.5 ${isMe ? 'border-white/50 text-white/80' : 'border-[#55B9DD]/50 text-slate-500'}`}>
+                                            <strong className="block truncate">{msg.replyTo.authorName}</strong>
+                                            <span className="truncate block opacity-90">{msg.replyTo.text}</span>
+                                        </div>
+                                    )}
+
+                                    <span className={isSys ? "font-serif font-bold text-base" : ""}>{msg.text}</span>
+                                </div>
+                                
+                                {/* Reactions Bar */}
+                                {!isSys && (
+                                    <div className={`flex gap-1.5 mt-1.5 items-center ${isMe ? 'flex-row-reverse' : ''}`}>
+                                        {['❤️', '👍', '🍕'].map(emoji => {
+                                            const count = msg.reactions?.[emoji]?.length || 0;
+                                            const active = msg.reactions?.[emoji]?.includes(profile.name);
+                                            return (
+                                                <button 
+                                                    key={emoji}
+                                                    onClick={() => toggleReaction(msg.id, emoji)}
+                                                    className={`text-[10px] px-2 py-0.5 rounded-full border transition-all flex items-center gap-1 ${
+                                                        active ? 'bg-[#008C45]/10 border-[#008C45] opacity-100' : 'bg-transparent border-transparent opacity-50 hover:opacity-100 hover:bg-slate-100'
+                                                    }`}
+                                                >
+                                                    {emoji} {count > 0 && <span className={active ? 'text-[#008C45] font-bold' : 'text-slate-500'}>{count}</span>}
+                                                </button>
+                                            );
+                                        })}
+                                        <button onClick={() => setReplyTo(msg)} className="text-[10px] text-slate-400 mx-2 hover:text-[#CD212A] uppercase font-bold transition-colors">Odpowiedz</button>
+                                    </div>
+                                )}
+                                {isSys && (
+                                    <button onClick={() => setReplyTo(msg)} className="text-[10px] text-slate-500 mt-2 bg-white px-3 py-1 rounded-full border border-slate-200 hover:border-[#008C45] hover:text-[#008C45] uppercase font-bold transition-colors shadow-sm">
+                                        Odpowiedz na to pytanie
+                                    </button>
+                                )}
+                            </div>
+                        );
+                    })
                   }
                 </div>
 
-                <form onSubmit={sendMessage} className="p-3 bg-white border-t border-slate-200 flex gap-2 shrink-0">
-                  <input type="text" value={newMessage} onChange={e => setNewMessage(e.target.value)} placeholder="Napisz wiadomość..." className="flex-1 bg-[#FDF9F1] border border-slate-200 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-[#008C45]" />
-                  <button type="submit" disabled={!newMessage.trim()} className="bg-[#CD212A] text-white rounded-full px-5 py-2 font-bold text-sm disabled:opacity-50 hover:bg-[#CD212A]/90">Wyślij</button>
-                </form>
+                <div className="p-3 bg-white border-t border-slate-200 flex flex-col z-10">
+                  {replyTo && (
+                      <div className="bg-[#F4F9FF] px-3 py-2 rounded-t-xl border-l-4 border-[#55B9DD] flex justify-between items-center text-xs mb-2">
+                          <div className="truncate text-slate-500">
+                              Odpowiadasz: <span className="font-bold text-slate-700">{replyTo.authorName}</span>
+                              <span className="block truncate opacity-80">{replyTo.text}</span>
+                          </div>
+                          <button onClick={() => setReplyTo(null)} className="text-slate-400 hover:text-[#CD212A] ml-2 p-1 transition-colors">
+                              <X size={14} />
+                          </button>
+                      </div>
+                  )}
+                  <form onSubmit={sendMessage} className="flex gap-2 relative">
+                    <input 
+                        type="text" 
+                        value={newMessage}
+                        onChange={e => setNewMessage(e.target.value)} 
+                        placeholder="Napisz wiadomość..." 
+                        className="flex-1 bg-slate-50 border border-slate-200 rounded-full px-4 py-2 pr-12 text-sm focus:outline-none focus:border-[#CD212A]" 
+                    />
+                    <button type="submit" disabled={!newMessage.trim()} className="bg-[#CD212A] text-white rounded-full w-10 h-10 flex items-center justify-center font-bold text-sm disabled:opacity-50 hover:bg-red-700 shrink-0 absolute right-1 top-1/2 -translate-y-1/2">
+                       <Send size={16} className="-ml-0.5" />
+                    </button>
+                  </form>
+                </div>
               </div>
             </div>
           );
