@@ -355,31 +355,27 @@
                 )}
               </main>
 
-              {!selectedDay && (
-                <nav className="fixed bottom-0 w-full bg-white border-t border-slate-200 px-1 sm:px-4 py-2 pb-safe z-30 shadow-[0_-10px_20px_rgba(0,0,0,0.03)] overflow-x-auto hide-scrollbar">
-                  <div className="max-w-xl mx-auto flex justify-between items-center text-[9px] sm:text-xs font-bold text-slate-500 min-w-max px-2 gap-4 sm:gap-6">
-                    <NavItem icon={<CalendarDays size={20} />} label="Plan" isActive={currentTab === 'calendar'} onClick={() => setCurrentTab('calendar')} />
-                    <NavItem icon={<BookOpen size={20} />} label="Rozmówki" isActive={currentTab === 'dictionary'} onClick={() => setCurrentTab('dictionary')} />
-                    <NavItem icon={<BrainCircuit size={20} />} label="Ciekawostki" isActive={currentTab === 'trivia'} onClick={() => setCurrentTab('trivia')} />
-                    <NavItem icon={<CheckSquare size={20} />} label="Wyzwania" isActive={currentTab === 'challenges'} onClick={() => setCurrentTab('challenges')} />
-                    <NavItem icon={<Users size={20} />} label="Zespół" isActive={currentTab === 'team'} onClick={() => setCurrentTab('team')} />
-                    <NavItem icon={<MessageSquare size={20} />} label="Czat" isActive={currentTab === 'chat'} onClick={() => setCurrentTab('chat')} />
+             {!selectedDay && (
+                <nav className="fixed bottom-0 w-full bg-white border-t border-slate-200 py-2 pb-safe z-30 shadow-[0_-10px_20px_rgba(0,0,0,0.03)]">
+                  <div className="max-w-xl mx-auto flex justify-around items-center text-[8.5px] sm:text-xs font-bold text-slate-500 w-full px-1 gap-0.5 sm:gap-2">
+                    <NavItem icon={<CalendarDays size={18} />} label="Plan" isActive={currentTab === 'calendar'} onClick={() => setCurrentTab('calendar')} />
+                    <NavItem icon={<BookOpen size={18} />} label="Rozmówki" isActive={currentTab === 'dictionary'} onClick={() => setCurrentTab('dictionary')} />
+                    <NavItem icon={<BrainCircuit size={18} />} label="Ciekawostki" isActive={currentTab === 'trivia'} onClick={() => setCurrentTab('trivia')} />
+                    <NavItem icon={<CheckSquare size={18} />} label="Wyzwania" isActive={currentTab === 'challenges'} onClick={() => setCurrentTab('challenges')} />
+                    <NavItem icon={<Users size={18} />} label="Zespół" isActive={currentTab === 'team'} onClick={() => setCurrentTab('team')} />
+                    <NavItem icon={<MessageSquare size={18} />} label="Czat" isActive={currentTab === 'chat'} onClick={() => setCurrentTab('chat')} />
                   </div>
                 </nav>
               )}
-
-              {showProfileModal && <ProfileModal profile={profile} onClose={() => setShowProfileModal(false)} />}
-              {newBadgeAlert && <BadgeAlertModal badge={newBadgeAlert} onClose={() => setNewBadgeAlert(null)} />}
-              {showEpicWin && <EpicWinModal onClose={() => setShowEpicWin(false)} />}
             </div>
           );
         }
 
         function NavItem({ icon, label, isActive, onClick }) {
           return (
-            <button onClick={onClick} className={`flex flex-col items-center p-2 rounded-xl transition-all duration-300 w-16 ${isActive ? 'text-[#CD212A]' : 'hover:bg-red-50 hover:text-[#CD212A]'}`}>
+            <button onClick={onClick} className={`flex flex-col items-center py-1.5 px-0.5 rounded-xl transition-all duration-300 flex-1 min-w-0 text-center ${isActive ? 'text-[#CD212A]' : 'hover:bg-red-50 hover:text-red-400'}`}>
               <div className={`mb-1 transition-transform ${isActive ? 'scale-110 text-[#008C45] drop-shadow-sm' : ''}`}>{icon}</div>
-              <span className={isActive ? 'text-[#008C45]' : ''}>{label}</span>
+              <span className={`truncate w-full ${isActive ? 'text-[#008C45]' : ''}`}>{label}</span>
             </button>
           );
         }
