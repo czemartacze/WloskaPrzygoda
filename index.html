@@ -366,7 +366,11 @@
                     <NavItem icon={<MessageSquare size={18} />} label="Czat" isActive={currentTab === 'chat'} onClick={() => setCurrentTab('chat')} />
                   </div>
                 </nav>
-              )}
+                 )}
+                    {showProfileModal && <ProfileModal profile={profile} onClose={() => setShowProfileModal(false)} />}
+                  {newBadgeAlert && <BadgeAlertModal badge={newBadgeAlert} onClose={() => setNewBadgeAlert(null)} />}
+                  {showEpicWin && <EpicWinModal onClose={() => setShowEpicWin(false)} />}
+            
             </div>
           );
         }
